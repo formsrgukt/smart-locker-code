@@ -1,4 +1,4 @@
-# <div align="center">
+# <div>
   <img src="./public/smart-locker-icon.svg" alt="Smart Locker Logo" width="120" />
 </div>  Smart Locker
 
