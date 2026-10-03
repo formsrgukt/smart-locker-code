@@ -541,18 +541,20 @@ export default function Dashboard() {
 
   const unorganizedFiles = recentFiles.filter((f: any) => !f.collectionId);
 
-  const basicFields = ['preferredName', 'dob', 'gender', 'phone'];
-  const academicFields = ['studentId', 'university', 'course'];
+  const basicFields = ['preferredName', 'dob', 'gender', 'bloodGroup', 'nationality', 'religion', 'phone', 'altPhone', 'currentAddress', 'permanentAddress'];
+  const academicFields = ['studentId', 'university', 'course', 'branch', 'yearSem', 'section', 'admissionYear', 'graduationYear'];
   const emergencyFields = ['emergencyName', 'emergencyPhone'];
-  const additionalFields = ['bloodGroup', 'nationality', 'currentAddress'];
+  const additionalFields = ['aadhaar', 'pan', 'passport', 'drivingLicence', 'admissionDate', 'idExpiry', 'passportExpiry', 'drivingLicenceExpiry'];
 
-  const isBasicComplete = profileData ? basicFields.every(f => profileData[f] && profileData[f].trim() !== '') : false;
-  const isAcademicComplete = profileData ? academicFields.every(f => profileData[f] && profileData[f].trim() !== '') : false;
-  const isEmergencyComplete = profileData ? emergencyFields.every(f => profileData[f] && profileData[f].trim() !== '') : false;
-  const isAdditionalComplete = profileData ? additionalFields.some(f => profileData[f] && profileData[f].trim() !== '') : false;
+  const isFieldComplete = (f: string) => profileData && profileData[f] && typeof profileData[f] === 'string' && profileData[f].trim() !== '';
+
+  const isBasicComplete = basicFields.filter(isFieldComplete).length >= 4; // At least 4 basic fields
+  const isAcademicComplete = academicFields.filter(isFieldComplete).length >= 4; // At least 4 academic fields
+  const isEmergencyComplete = emergencyFields.every(isFieldComplete); // Both emergency fields
+  const isAdditionalComplete = additionalFields.filter(isFieldComplete).length >= 2; // At least 2 additional fields
 
   const totalFields = [...basicFields, ...academicFields, ...emergencyFields, ...additionalFields];
-  const filledFields = totalFields.filter(f => profileData?.[f] && profileData[f].trim() !== '').length;
+  const filledFields = totalFields.filter(isFieldComplete).length;
   const profileCompletionPercentage = totalFields.length > 0 ? Math.round((filledFields / totalFields.length) * 100) : 0;
 
   return (
