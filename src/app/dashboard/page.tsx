@@ -1133,9 +1133,70 @@ export default function Dashboard() {
             </div>
             
             {collections.length === 0 ? (
-               <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-12 flex flex-col items-center text-center">
-                 <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4"><Folder size={32}/></div>
-                 <p className="text-slate-500 font-medium">No collections yet.</p>
+               <div className="mt-4 bg-transparent py-4 flex flex-col items-center text-center">
+                  <div className="overflow-hidden w-full flex justify-center mt-4">
+                    <div className="col-app" style={{ transform: "scale(min(1, calc((100vw - 64px) / 920)))", transformOrigin: "top center" } as any}>
+                      {/* header */}
+                      <div className="col-head">
+                        <h1>Categories</h1>
+                        <div className="col-tools">
+                          <span className="col-lib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v18M10 3v18M15 3v18M18.500 5l3 15"/></svg></span>
+                          <button className="col-nb" type="button" tabIndex={-1}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New Category</button>
+                        </div>
+                      </div>
+
+                      {/* panel */}
+                      <div className="col-panel">
+                        <div className="col-empty">
+                          <span className="col-disc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 002-2V8a2 2 0 00-2-2h-7.900a2 2 0 01-1.690-.9L9.600 3.900A2 2 0 007.930 3H4a2 2 0 00-2 2v13a2 2 0 002 2z"/></svg></span>
+                          <p>No categories yet.</p>
+                        </div>
+
+                        <div className="col-item">
+                          <span className="col-tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 002-2V8a2 2 0 00-2-2h-7.900a2 2 0 01-1.690-.9L9.600 3.900A2 2 0 007.930 3H4a2 2 0 00-2 2v13a2 2 0 002 2z"/></svg></span>
+                          <div><b>Travel Documents</b><small>0 files</small></div>
+                          <span className="col-ok"><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></span>
+                        </div>
+                      </div>
+
+                      {/* burst around the new collection */}
+                      <div className="col-fx">
+                        <div className="col-ring"></div>
+                        <i className="col-sp" style={{ '--x': '-110px', '--y': '-40px' } as any}></i>
+                        <i className="col-sp" style={{ '--x': '-96px', '--y': '56px' } as any}></i>
+                        <i className="col-sp" style={{ '--x': '-30px', '--y': '-96px' } as any}></i>
+                        <i className="col-sp" style={{ '--x': '40px', '--y': '-90px' } as any}></i>
+                        <i className="col-sp" style={{ '--x': '104px', '--y': '-30px' } as any}></i>
+                        <i className="col-sp" style={{ '--x': '98px', '--y': '58px' } as any}></i>
+                        <i className="col-sp" style={{ '--x': '6px', '--y': '94px' } as any}></i>
+                      </div>
+
+                      {/* toast */}
+                      <div className="col-toast"><i><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></i>Category created</div>
+
+                      {/* modal */}
+                      <div className="col-dim"></div>
+                      <div className="col-modal">
+                        <h3>New category</h3>
+                        <label>Category name</label>
+                        <div className="col-input">
+                          <span className="col-ph">Category name</span>
+                          <span className="col-typed"><span className="col-txt">Travel Documents</span><i className="col-caret"></i></span>
+                        </div>
+                        <div className="col-actions">
+                          <span className="col-cancel">Cancel</span>
+                          <span className="col-create">
+                            <span className="col-c1">Create</span>
+                            <span className="col-c2"><i className="col-mini"></i></span>
+                            <span className="col-c3"><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg>Created</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* cursor */}
+                      <div className="col-cursor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l15 9.500-6.500 1.500 3.500 7-3 1.500-3.500-7L4 19.500z" fill="#0f172a" stroke="#fff" strokeWidth="1.600" strokeLinejoin="round"/></svg></div>
+                    </div>
+                  </div>
                </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
