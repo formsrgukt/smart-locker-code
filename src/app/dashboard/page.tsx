@@ -476,7 +476,7 @@ export default function Dashboard() {
       await updateDoc(doc(db, "collections", col.id), { status: 'trash', deletedAt });
       
       setCollections(prev => prev.map(c => c.id === col.id ? { ...c, status: 'trash', deletedAt } : c));
-      setActiveTab('Trash');
+      setActiveTab('Collections');
       
       setIsDeletingCollection(false);
       setDeleteCollectionSuccess(true);
