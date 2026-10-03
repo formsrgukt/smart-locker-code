@@ -1464,11 +1464,11 @@ export default function Dashboard() {
                 </div>
                 <div className="p-6 bg-white flex flex-col gap-3">
                   <div className="flex justify-between items-center text-sm mb-1">
-                    <span className="font-semibold text-slate-700">12.4 GB <span className="font-normal text-slate-500">used of 15 GB</span></span>
-                    <span className="text-slate-500">82%</span>
+                    <span className="font-semibold text-slate-700">{storageDisplay.value} {storageDisplay.unit} <span className="font-normal text-slate-500">used of 10 GB</span></span>
+                    <span className="text-slate-500">{storagePercent}%</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                    <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: '82%' }}></div>
+                    <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: `${storagePercent}%` }}></div>
                   </div>
                 </div>
               </div>
