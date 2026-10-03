@@ -1984,20 +1984,22 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setIsCreateCollectionOpen(false)} disabled={isCreatingCollection || createCollectionSuccess} className="flex-1 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50">Cancel</button>
-                <button type="submit" disabled={!newCollectionName.trim() || isCreatingCollection || createCollectionSuccess} className={`relative flex-1 py-3 font-semibold text-white transition-colors shadow-sm flex items-center justify-center min-w-[120px] rounded-xl ${createCollectionSuccess ? 'bg-emerald-500 hover:bg-emerald-600 border-transparent' : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600'}`}>
-                  {createCollectionSuccess ? (
-                    <span className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-                       <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[3] rounded" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-                       Created
-                    </span>
-                  ) : isCreatingCollection ? (
-                    <span className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-                       <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></div>
-                       Creating...
-                    </span>
-                  ) : (
-                    <span className="animate-in fade-in zoom-in duration-200">Create</span>
-                  )}
+                <button type="submit" disabled={!newCollectionName.trim() || isCreatingCollection || createCollectionSuccess} className={`relative flex-1 h-[48px] font-semibold text-white transition-all duration-300 shadow-sm flex items-center justify-center min-w-[120px] rounded-xl overflow-hidden ${(isCreatingCollection && !createCollectionSuccess) ? 'bg-blue-600' : createCollectionSuccess ? 'bg-emerald-500' : 'bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600'}`}>
+                  {/* Idle State */}
+                  <span className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isCreatingCollection || createCollectionSuccess ? 'opacity-0 -translate-y-6' : 'opacity-100 translate-y-0'}`}>
+                    Create
+                  </span>
+                  
+                  {/* Loading State */}
+                  <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${isCreatingCollection ? 'opacity-100 translate-y-0' : (createCollectionSuccess ? 'opacity-0 -translate-y-6' : 'opacity-0 translate-y-6')}`}>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></div>
+                  </span>
+
+                  {/* Success State */}
+                  <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${createCollectionSuccess ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-white stroke-[3]" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                    Created
+                  </span>
                 </button>
               </div>
             </form>
