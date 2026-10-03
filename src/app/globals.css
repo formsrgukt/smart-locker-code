@@ -501,3 +501,67 @@ button {
 .back-pill:focus-visible { outline: 2px solid #155dfc; outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) { .back-pill, .back-pill svg, .back-pill span { transition-duration: .01ms; } }
+
+/* ================= No Documents Found ================= */
+.nodoc-stage { position: relative; width: 280px; height: 220px; }
+.nodoc-stage > * { position: absolute; }
+.nodoc-stage * { animation-timing-function: ease-in-out; }
+
+/* document (solid, then dissolves) */
+.nodoc-doc, .nodoc-ghost { left: 50%; top: 20px; width: 120px; height: 150px; margin-left: -60px; border-radius: 14px; }
+.nodoc-doc {
+  padding: 14px 14px; background: #fff; border: 1px solid #e3e9f4; box-shadow: 0 16px 30px -16px rgba(30,41,90,.35);
+  display: grid; align-content: start; gap: 9px; opacity: 0; animation: nodoc 6s infinite;
+}
+@keyframes nodoc {
+  0%       { opacity: 0; transform: translateY(14px) scale(.96); }
+  6%, 50%  { opacity: 1; transform: none; }
+  56%, 100%{ opacity: 0; transform: scale(.94); }
+}
+.nodoc-doc .tag { width: 34px; height: 12px; border-radius: 4px; background: #dbe7ff; }
+.nodoc-doc .ln { display: block; height: 5px; border-radius: 3px; background: #e6ebf5; }
+.nodoc-doc .ln:nth-child(3) { width: 80%; } .nodoc-doc .ln:nth-child(4) { width: 92%; } .nodoc-doc .ln:nth-child(5) { width: 60%; } .nodoc-doc .ln:nth-child(6) { width: 76%; }
+
+/* the "empty" placeholder that remains */
+.nodoc-ghost { border: 2px dashed #cfd8e6; background: #f8fafc; display: grid; place-items: center; opacity: 1; animation: nodoc-ghost 6s infinite; }
+.nodoc-ghost svg { width: 34px; height: 34px; fill: none; stroke: #cbd5e1; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes nodoc-ghost {
+  0%, 50%  { opacity: 0; transform: scale(.96); }
+  58%, 90% { opacity: 1; transform: none; }
+  96%, 100%{ opacity: 0; transform: none; }
+}
+
+/* magnifier */
+.nodoc-mag { left: 50%; top: 95px; width: 0; height: 0; z-index: 4; opacity: 0; animation: nodoc-mag 6s infinite; }
+.nodoc-mag svg { position: absolute; left: -30px; top: -30px; width: 72px; height: 72px; overflow: visible; filter: drop-shadow(0 8px 10px rgba(30,41,90,.25)); }
+@keyframes nodoc-mag {
+  0%, 6%  { opacity: 0; translate: 110px 70px; }
+  12%     { opacity: 1; translate: 90px 55px; }
+  24%     { translate: -30px -45px; }
+  34%     { translate: 30px -15px; }
+  44%     { translate: -30px 20px; }
+  52%     { translate: 0 5px; }
+  55%     { translate: -10px 5px; }
+  57%     { translate: 10px 5px; }
+  59%     { translate: -8px 5px; }
+  61%     { translate: 8px 5px; }
+  63%     { translate: -4px 5px; }
+  65%, 86%{ opacity: 1; translate: 0 5px; }
+  92%, 100% { opacity: 0; translate: 0 5px; }
+}
+.nodoc-lens-fill { fill: rgba(21,93,252,.07); }
+.nodoc-lens { fill: none; stroke: #94a3b8; stroke-width: 4; }
+.nodoc-handle { stroke: #94a3b8; stroke-width: 6; stroke-linecap: round; }
+.nodoc-xm { fill: none; stroke: #ef4444; stroke-width: 3.5; stroke-linecap: round; opacity: 0; transform-box: fill-box; transform-origin: center; animation: nodoc-xm 6s infinite; }
+@keyframes nodoc-xm {
+  0%, 51%  { opacity: 0; scale: .4; }
+  54%      { opacity: 1; scale: 1.25; }
+  56%      { opacity: 1; scale: 1; }
+  86%      { opacity: 1; scale: 1; }
+  90%, 100%{ opacity: 0; scale: 1; }
+}
+
+.nodoc-ring { left: 50%; top: 70px; width: 60px; height: 60px; margin-left: -30px; border-radius: 50%; border: 2px solid #fca5a5; opacity: 0; animation: nodoc-ring 6s ease-out infinite; }
+@keyframes nodoc-ring { 0%, 52% { opacity: 0; scale: .5; } 53% { opacity: .6; scale: .6; } 62%, 100% { opacity: 0; scale: 1.8; } }
+
+@media (prefers-reduced-motion: reduce) { .nodoc-doc, .nodoc-mag, .nodoc-ring { display: none; } }

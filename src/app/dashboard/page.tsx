@@ -17,6 +17,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import SecureLoader from '@/components/SecureLoader';
 import EmptyState from '@/components/EmptyState';
+import NoDocumentsFound from '@/components/NoDocumentsFound';
 import Logo from '@/components/Logo';
 import UploadCard from '@/components/UploadCard';
 import ScanCard from '@/components/ScanCard';
@@ -1103,8 +1104,8 @@ export default function Dashboard() {
              {renderFilterControls()}
             
             {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(activeFiles, activeTab.split(':')[1]) : unorganizedFiles).length === 0 ? (
-               <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-12">
-                 <EmptyState />
+               <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-4">
+                 {searchQuery || filterType !== 'all' ? <NoDocumentsFound /> : <div className="py-8"><EmptyState /></div>}
                </div>
             ) : defaultFolderView === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -1371,11 +1372,15 @@ export default function Dashboard() {
                    {renderFilterControls()}
                    
                    {getFilteredAndSortedFiles(collectionFiles).length === 0 ? (
-                      <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-16 flex flex-col items-center text-center">
-                        <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4"><FileText size={40}/></div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-1">No files match your filters</h3>
-                        <p className="text-slate-500 font-medium mb-6">Upload some files or adjust your search.</p>
-                        <button onClick={() => setIsUploadModalOpen(true)} className="text-blue-600 bg-blue-50 px-6 py-2.5 rounded-xl font-semibold hover:bg-blue-100 transition-colors active:scale-95">Upload File</button>
+                      <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-4 flex flex-col items-center text-center">
+                        {searchQuery || filterType !== 'all' ? <NoDocumentsFound /> : (
+                          <div className="py-12">
+                            <div className="w-20 h-20 mx-auto rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4"><FileText size={40}/></div>
+                            <h3 className="text-lg font-bold text-slate-800 mb-1">No files in collection</h3>
+                            <p className="text-slate-500 font-medium mb-6">Upload some files to get started.</p>
+                            <button onClick={() => setIsUploadModalOpen(true)} className="text-blue-600 bg-blue-50 px-6 py-2.5 rounded-xl font-semibold hover:bg-blue-100 transition-colors active:scale-95">Upload File</button>
+                          </div>
+                        )}
                       </div>
                    ) : (
                      <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
