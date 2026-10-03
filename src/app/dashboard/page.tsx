@@ -1670,7 +1670,7 @@ export default function Dashboard() {
                </button>
             </div>
             
-            {trashFiles.length === 0 ? (
+            {(trashFiles.length === 0 && trashCollections.length === 0) ? (
                 <div className="mt-8 bg-transparent py-16 flex flex-col items-center text-center">
                   <div className="trash-empty-stage" aria-hidden="true">
                     <div className="trash-ring"></div>
@@ -1711,11 +1711,24 @@ export default function Dashboard() {
                     <div className="trash-cursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 9.500-6.500 1.500 3.500 7-3 1.500-3.500-7L4 19.500z" fill="#0f172a" stroke="#fff" strokeWidth="1.600" strokeLinejoin="round"/></svg></div>
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 mb-2 mt-4">Trash is empty</h3>
-                  <p className="text-slate-500 font-medium max-w-md">No files have been deleted.</p>
+                  <p className="text-slate-500 font-medium max-w-md">No files or categories have been deleted.</p>
                 </div>
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
+                  {trashCollections.map((col, i) => (
+                    <div key={'col-'+i} className="flex items-center justify-between p-4 bg-slate-50 opacity-75">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-red-500 bg-red-100">
+                          <Folder size={18}/>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm text-slate-800 line-through">{col.name} (Category)</h4>
+                          <p className="text-xs text-slate-500">{trashFiles.filter(f => f.collectionId === col.id).length} files</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                   {trashFiles.map((file, i) => (
                     <div key={i} className="flex items-center justify-between p-4 bg-slate-50 opacity-75">
                       <div className="flex items-center gap-4">
