@@ -262,11 +262,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authResolved || !user) return;
-    // Run the data fetch and a strict 5000ms timer concurrently
     Promise.all([
       fetchFiles(user.uid),
-      fetchCollections(user.uid),
-      new Promise(resolve => setTimeout(resolve, 5000))
+      fetchCollections(user.uid)
     ]).finally(() => {
       setIsLoading(false);
     });
