@@ -89,6 +89,7 @@ export default function Dashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadSuccess, setIsUploadSuccess] = useState(false);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [recentFiles, setRecentFiles] = useState<any[]>([]);
   const [shareFile, setShareFile] = useState<any | null>(null);
@@ -1880,10 +1881,17 @@ export default function Dashboard() {
               
               <div className="space-y-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Fast CDN (jsDelivr)</label>
+                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Link</label>
                   <div className="flex gap-2">
                     <input type="text" readOnly value={shareFile.urls?.jsdelivr || ''} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 outline-none" />
-                    <button onClick={() => { navigator.clipboard.writeText(shareFile.urls?.jsdelivr || ''); showToast('Link Copied', 'CDN link copied to clipboard.'); }} className="px-4 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors active:scale-95"><Copy size={16}/></button>
+                    <button onClick={() => { 
+                      navigator.clipboard.writeText(shareFile.urls?.jsdelivr || ''); 
+                      showToast('Link Copied', 'CDN link copied to clipboard.'); 
+                      setIsLinkCopied(true);
+                      setTimeout(() => setIsLinkCopied(false), 2000);
+                    }} className={`px-4 ${isLinkCopied ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'} rounded-xl flex items-center justify-center transition-all active:scale-95`}>
+                      {isLinkCopied ? <Check size={16} className="animate-in zoom-in" /> : <Copy size={16}/>}
+                    </button>
                   </div>
                 </div>
               </div>
