@@ -542,6 +542,7 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error creating collection:", error);
     }
+    }, 600);
   };
 
   const processFile = async (file: File) => {
