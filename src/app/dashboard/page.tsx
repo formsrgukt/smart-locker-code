@@ -1876,30 +1876,14 @@ export default function Dashboard() {
               <button onClick={() => setShareFile(null)} className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors">&times;</button>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-sm text-slate-500 mb-4">Share <span className="font-semibold text-slate-800">{shareFile.name}</span> using any of the links below:</p>
+              <p className="text-sm text-slate-500 mb-4">Share <span className="font-semibold text-slate-800">{shareFile.name}</span> using the link below:</p>
               
               <div className="space-y-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Direct / Raw Link</label>
-                  <div className="flex gap-2">
-                    <input type="text" readOnly value={shareFile.urls?.raw || shareFile.url} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 outline-none" />
-                    <button onClick={() => { navigator.clipboard.writeText(shareFile.urls?.raw || shareFile.url); showToast('Link Copied', 'Direct link copied to clipboard.'); }} className="px-4 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors active:scale-95"><Copy size={16}/></button>
-                  </div>
-                </div>
-
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Fast CDN (jsDelivr)</label>
                   <div className="flex gap-2">
                     <input type="text" readOnly value={shareFile.urls?.jsdelivr || ''} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 outline-none" />
                     <button onClick={() => { navigator.clipboard.writeText(shareFile.urls?.jsdelivr || ''); showToast('Link Copied', 'CDN link copied to clipboard.'); }} className="px-4 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors active:scale-95"><Copy size={16}/></button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">GitHub View</label>
-                  <div className="flex gap-2">
-                    <input type="text" readOnly value={shareFile.urls?.github || ''} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 outline-none" />
-                    <button onClick={() => { navigator.clipboard.writeText(shareFile.urls?.github || ''); showToast('Link Copied', 'GitHub link copied to clipboard.'); }} className="px-4 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors active:scale-95"><Copy size={16}/></button>
                   </div>
                 </div>
               </div>
