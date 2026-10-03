@@ -11,7 +11,7 @@ import {
 
 import dynamic from 'next/dynamic';
 import { db, auth } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, deleteDoc, updateDoc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import HeartButton from '@/components/HeartButton';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -61,23 +61,22 @@ export default function Dashboard() {
   const dragCounter = useRef(0);
 
   useEffect(() => {
-    if (user) {
-      const fetchPrefs = async () => {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setProfileData(data);
-            if (data.twoStepVerification === false) setTwoStepEnabled(false);
-            if (data.emailNotifications === false) setEmailNotificationsEnabled(false);
-            if (data.defaultFolderView) setDefaultFolderView(data.defaultFolderView);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      };
-      fetchPrefs();
-    }
+    if (!user) return;
+    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        setProfileData(data);
+        if (data.twoStepVerification === false) setTwoStepEnabled(false);
+        else setTwoStepEnabled(true);
+        if (data.emailNotifications === false) setEmailNotificationsEnabled(false);
+        else setEmailNotificationsEnabled(true);
+        if (data.defaultFolderView) setDefaultFolderView(data.defaultFolderView);
+      }
+    }, (error) => {
+      console.error("Error listening to profile data:", error);
+    });
+
+    return () => unsubscribe();
   }, [user]);
 
   const toggleTwoStep = async () => {
