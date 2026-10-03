@@ -13,6 +13,7 @@ import CustomSelect from '@/components/CustomSelect';
 interface PersonalInfoViewProps {
   user: FirebaseUser | null;
   showToast: (msg: string, desc?: string, type?: 'success' | 'error') => void;
+  setGlobalProfileData?: (data: any) => void;
 }
 
 const DEFAULT_PROFILE_DATA = {
@@ -89,7 +90,7 @@ const MaskedId = ({ label, field, verified, isEditing, value, onChange }: { labe
   );
 };
 
-export default function PersonalInfoView({ user, showToast }: PersonalInfoViewProps) {
+export default function PersonalInfoView({ user, showToast, setGlobalProfileData }: PersonalInfoViewProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,6 +123,9 @@ export default function PersonalInfoView({ user, showToast }: PersonalInfoViewPr
     setIsSaving(true);
     try {
       await setDoc(doc(db, 'users', user.uid), profileData, { merge: true });
+      if (setGlobalProfileData) {
+        setGlobalProfileData((prev: any) => ({ ...prev, ...profileData }));
+      }
       showToast("Profile Saved", "Your personal information has been updated.", "success");
       setIsEditing(false);
     } catch (error) {

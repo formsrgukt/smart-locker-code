@@ -931,7 +931,7 @@ export default function Dashboard() {
             )}
           </div>
         ) : activeTab === 'Personal Info' ? (
-          <PersonalInfoView user={user} showToast={showToast} />
+          <PersonalInfoView user={user} showToast={showToast} setGlobalProfileData={setProfileData} />
         ) : activeTab === 'Collections' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
