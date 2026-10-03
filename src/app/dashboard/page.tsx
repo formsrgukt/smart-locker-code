@@ -1024,7 +1024,52 @@ export default function Dashboard() {
           </div>
           </div>
         ) : activeTab === 'Documents' || activeTab.startsWith('Category:') ? (
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
+          <div 
+            className="relative p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300 min-h-screen"
+            onDragEnter={(e) => { 
+              e.preventDefault(); 
+              e.stopPropagation(); 
+              dragCounter.current += 1;
+              if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+                setIsDragging(true); 
+              }
+            }}
+            onDragLeave={(e) => { 
+              e.preventDefault(); 
+              e.stopPropagation(); 
+              dragCounter.current -= 1;
+              if (dragCounter.current === 0) {
+                setIsDragging(false); 
+              }
+            }}
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragging(false);
+              dragCounter.current = 0;
+              const file = e.dataTransfer.files?.[0];
+              if (file) {
+                setIsUploadModalOpen(true);
+                processFile(file);
+              }
+            }}
+          >
+            {isDragging && (
+              <div 
+                className="absolute z-[100] animate-in fade-in duration-200 pointer-events-none grid place-items-center"
+                style={{ inset: '14px', border: '2px dashed #6aa6ff', borderRadius: '22px', backgroundColor: '#f3f8ff' }}
+              >
+                <div className="flex flex-col items-center" style={{ gap: '6px' }}>
+                  <svg style={{ width: '72px', height: '72px', color: '#6aa6ff' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/>
+                    <g className="animate-cloud-up"><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></g>
+                  </svg>
+                  <h2 style={{ margin: '18px 0 0', fontSize: '26px', fontWeight: '600', color: '#4a8cf5' }}>Drop file to upload</h2>
+                  <span style={{ fontSize: '16px', color: '#6aa6ff' }}>Release to upload here</span>
+                </div>
+              </div>
+            )}
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-center gap-4">
                 {activeTab.startsWith('Category:') && (
