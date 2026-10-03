@@ -817,7 +817,7 @@ export default function Dashboard() {
                     {isAcademicComplete ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-slate-200" />}
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className={isEmergencyComplete ? "text-slate-700" : "text-slate-500"}>Emergency Contact</span>
+                    <span className={isEmergencyComplete ? "text-slate-700" : "text-slate-500"}>Contact Information</span>
                     {isEmergencyComplete ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-slate-200" />}
                   </li>
                   <li className="flex items-center justify-between text-sm">
