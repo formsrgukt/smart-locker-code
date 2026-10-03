@@ -114,6 +114,7 @@ export default function Dashboard() {
   const [collections, setCollections] = useState<{id?: string, name: string, count: number, status?: string, deletedAt?: string}[]>([]);
   const [twoStepEnabled, setTwoStepEnabled] = useState(true);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
+  const [loginAlertsEnabled, setLoginAlertsEnabled] = useState(false);
   const [defaultFolderView, setDefaultFolderView] = useState<'list' | 'grid'>('list');
   const [restoreConfirmFile, setRestoreConfirmFile] = useState<any | null>(null);
   const [permanentDeleteConfirmFile, setPermanentDeleteConfirmFile] = useState<any | null>(null);
@@ -142,6 +143,8 @@ export default function Dashboard() {
         else setTwoStepEnabled(true);
         if (data.emailNotifications === false) setEmailNotificationsEnabled(false);
         else setEmailNotificationsEnabled(true);
+        if (data.loginAlerts === true) setLoginAlertsEnabled(true);
+        else setLoginAlertsEnabled(false);
         if (data.defaultFolderView) setDefaultFolderView(data.defaultFolderView);
       }
     }, (error) => {
@@ -176,6 +179,20 @@ export default function Dashboard() {
       console.error(e);
       setEmailNotificationsEnabled(!newVal);
       showToast('Error', 'Failed to update preferences', 'error');
+    }
+  };
+
+  const toggleLoginAlerts = async () => {
+    if (!user) return;
+    const newVal = !loginAlertsEnabled;
+    setLoginAlertsEnabled(newVal);
+    try {
+      await setDoc(doc(db, 'users', user.uid), { loginAlerts: newVal }, { merge: true });
+      showToast(newVal ? 'Login Alerts Enabled' : 'Login Alerts Disabled', 'Your security preferences have been saved.', 'success');
+    } catch (e) {
+      console.error(e);
+      setLoginAlertsEnabled(!newVal);
+      showToast('Error', 'Failed to update security settings', 'error');
     }
   };
 
@@ -1560,12 +1577,12 @@ export default function Dashboard() {
                       <p className="text-sm text-slate-600 max-w-lg">Get instantly notified via email if anyone logs into your account from a new device or unfamiliar location.</p>
                     </div>
                   </div>
-                  <button onClick={() => showToast('Success', 'Login alerts have been enabled', 'success')} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-orange-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shadow-sm">
-                    Enable Alerts
+                  <button onClick={toggleLoginAlerts} className={`${loginAlertsEnabled ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-orange-600'} border px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shadow-sm`}>
+                    {loginAlertsEnabled ? 'Disable Alerts' : 'Enable Alerts'}
                   </button>
                 </div>
-                <div className="p-4 bg-white text-sm text-slate-500">
-                  Status: Currently disabled for this account
+                <div className={`p-4 text-sm font-medium ${loginAlertsEnabled ? 'bg-orange-50/50 text-orange-700' : 'bg-white text-slate-500'}`}>
+                  Status: Currently {loginAlertsEnabled ? 'enabled' : 'disabled'} for this account
                 </div>
               </div>
 

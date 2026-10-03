@@ -25,6 +25,14 @@ export default function LoginPage() {
 
   const notifyLogin = async (email: string, displayName: string) => {
     try {
+      if (auth.currentUser) {
+        const userRef = doc(db, 'users', auth.currentUser.uid);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists() && userDoc.data().loginAlerts !== true) {
+          return; // Alerts are disabled
+        }
+      }
+
       // Fetch location data based on user IP
       const geoResponse = await fetch('https://get.geojs.io/v1/ip/geo.json');
       const geoData = await geoResponse.json();
