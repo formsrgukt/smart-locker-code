@@ -27,6 +27,59 @@ import PersonalInfoView from './PersonalInfoView';
 import PdfOpeningLoader from './PdfOpeningLoader';
 const PdfViewer = dynamic(() => import('./PdfViewer'), { ssr: false, loading: () => <PdfOpeningLoader /> });
 
+const CustomDropdown = ({ value, options, onChange }: { value: string, options: {label: string, value: string}[], onChange: (val: string) => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value) || options[0];
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 font-medium cursor-pointer shadow-sm hover:bg-slate-50 transition-colors w-full md:w-[160px]"
+      >
+        <span className="truncate">{selectedOption.label}</span>
+        <ChevronDown size={16} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute top-full mt-2 left-0 right-0 md:right-auto md:w-max min-w-[160px] bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="p-1 max-h-60 overflow-y-auto">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between ${
+                  value === opt.value 
+                    ? 'bg-blue-50 text-blue-700 font-medium' 
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {opt.label}
+                {value === opt.value && <Check size={14} className="text-blue-600" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -241,60 +294,7 @@ export default function Dashboard() {
     return result;
   };
 
-  const CustomDropdown = ({ value, options, onChange }: { value: string, options: {label: string, value: string}[], onChange: (val: string) => void }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-          setIsOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const selectedOption = options.find(opt => opt.value === value) || options[0];
-
-    return (
-      <div className="relative" ref={dropdownRef}>
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 font-medium cursor-pointer shadow-sm hover:bg-slate-50 transition-colors w-full md:w-[160px]"
-        >
-          <span className="truncate">{selectedOption.label}</span>
-          <ChevronDown size={16} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-        
-        {isOpen && (
-          <div className="absolute top-full mt-2 left-0 right-0 md:right-auto md:w-max min-w-[160px] bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-1 max-h-60 overflow-y-auto">
-              {options.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    onChange(opt.value);
-                    setIsOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between ${
-                    value === opt.value 
-                      ? 'bg-blue-50 text-blue-700 font-medium' 
-                      : 'text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {opt.label}
-                  {value === opt.value && <Check size={14} className="text-blue-600" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const FilterControls = () => {
+  const renderFilterControls = () => {
     const filterOptions = [
       { value: 'all', label: 'All Types' },
       { value: 'image', label: 'Images' },
@@ -1100,7 +1100,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-             <FilterControls />
+             {renderFilterControls()}
             
             {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(activeFiles, activeTab.split(':')[1]) : unorganizedFiles).length === 0 ? (
                <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-12">
@@ -1368,7 +1368,7 @@ export default function Dashboard() {
                      </div>
                    </div>
                    
-                   <FilterControls />
+                   {renderFilterControls()}
                    
                    {getFilteredAndSortedFiles(collectionFiles).length === 0 ? (
                       <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-16 flex flex-col items-center text-center">
