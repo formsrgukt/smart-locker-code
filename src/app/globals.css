@@ -131,3 +131,77 @@ button {
 .hb-fill    { fill: var(--hb-red); stroke: var(--hb-red); stroke-width: 1.8; stroke-linejoin: round; }
 .hb-trim    { fill: none; stroke: var(--hb-red); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.06; }
 .hb-shine   { fill: none; stroke: rgba(255,255,255,.8); stroke-width: 1.5; stroke-linecap: round; }
+
+/* Favorites Empty State Animation */
+:root {
+  --fav-T: 5.6s;
+}
+
+.fav-empty-stage { position: relative; width: 280px; height: 230px; margin: 0 auto; }
+.fav-empty-stage > * { position: absolute; }
+
+/* big heart (the destination) */
+.fav-big { left: 50%; top: 14px; width: 92px; height: 92px; margin-left: -46px; animation: favBreathe 2.8s ease-in-out infinite alternate; }
+@keyframes favBreathe { from { transform: scale(.96); } to { transform: scale(1.04); } }
+.fav-big svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; stroke-linejoin: round; }
+.fav-big .line { fill: none; stroke: #dbe3ee; stroke-width: 2.4; }
+.fav-big .fill { fill: url(#hg); stroke: none; opacity: 0; transform-origin: 50% 55%; animation: favBigFill var(--fav-T) linear infinite; filter: drop-shadow(0 10px 14px rgba(239,68,68,.35)); }
+@keyframes favBigFill {
+  0%, 56%  { opacity: 0; transform: scale(.6); }
+  60%      { opacity: 1; transform: scale(1.25); animation-timing-function: ease-in-out; }
+  64%      { transform: scale(.94); }
+  67%      { transform: scale(1.1); }
+  70%, 82% { opacity: 1; transform: scale(1); }
+  91%, 100%{ opacity: 0; transform: scale(.9); }
+}
+.fav-ring { left: 50%; top: 14px; width: 92px; height: 92px; margin-left: -46px; border-radius: 50%; border: 3px solid #fda4af; opacity: 0; animation: favRing var(--fav-T) ease-out infinite; }
+@keyframes favRing { 0%, 58% { opacity: 0; scale: .6; } 60% { opacity: .7; scale: .8; } 74%, 100% { opacity: 0; scale: 2; } }
+
+/* sparkles around big heart */
+.fav-sp { left: 50%; top: 60px; width: 7px; height: 7px; margin: -3px 0 0 -3px; border-radius: 50%; background: #fb7185; opacity: 0; animation: favSpark var(--fav-T) ease-out infinite; }
+.fav-sp:nth-of-type(odd) { background: #fbbf24; width: 6px; height: 6px; }
+@keyframes favSpark { 0%, 59% { opacity: 0; translate: 0 0; scale: .3; } 62% { opacity: 1; } 76%, 100% { opacity: 0; translate: var(--x) var(--y); scale: 1; } }
+
+/* file card */
+.fav-card {
+  left: 50%; top: 122px; width: 96px; height: 100px; margin-left: -48px; padding: 10px 10px; border-radius: 14px;
+  background: #fff; border: 1px solid #e6ebf5; box-shadow: 0 14px 26px -12px rgba(30,41,90,.35);
+  display: grid; align-content: start; gap: 7px; opacity: 0; animation: favCard var(--fav-T) linear infinite;
+}
+@keyframes favCard {
+  0%       { opacity: 0; transform: translateY(26px) scale(.9); animation-timing-function: cubic-bezier(.16,1,.3,1); }
+  12.5%    { opacity: 1; transform: none; }
+  46%      { opacity: 1; transform: none; animation-timing-function: cubic-bezier(.5,0,.9,.4); }
+  59%      { opacity: 0; transform: translateY(-78px) scale(.28); }
+  100%     { opacity: 0; transform: translateY(-78px) scale(.28); }
+}
+.fav-card .tag { justify-self: start; font-size: 9px; font-weight: 700; letter-spacing: .05em; color: #fff; background: #ef4444; padding: 2px 6px; border-radius: 5px; }
+.fav-card .ln { display: block; height: 4px; border-radius: 2px; background: #e3e8f4; }
+.fav-card .ln.s { width: 60%; }
+.fav-card .name { margin-top: 2px; font-size: 10px; font-weight: 600; color: #3b4a68; }
+
+.fav-heart-btn {
+  position: absolute; right: 7px; top: 7px; width: 22px; height: 22px; border-radius: 50%; background: #fff;
+  box-shadow: 0 3px 8px -2px rgba(30,41,90,.35); display: grid; place-items: center; overflow: visible;
+}
+.fav-heart-btn svg { width: 13px; height: 13px; stroke-width: 2.4; stroke-linejoin: round; fill: transparent; stroke: #b4bfd3; animation: favMini var(--fav-T) linear infinite; }
+@keyframes favMini {
+  0%, 33%  { fill: transparent; stroke: #b4bfd3; scale: 1; }
+  34%      { fill: #ef4444; stroke: #ef4444; scale: 1.6; animation-timing-function: ease-out; }
+  39%, 100%{ fill: #ef4444; stroke: #ef4444; scale: 1; }
+}
+.fav-bp { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: #fb7185; opacity: 0; animation: favBurst var(--fav-T) ease-out infinite; }
+@keyframes favBurst { 0%, 33% { opacity: 0; translate: 0 0; scale: .4; } 35% { opacity: 1; } 45%, 100% { opacity: 0; translate: var(--x) var(--y); scale: 1; } }
+
+/* cursor */
+.fav-cursor { left: 50%; top: 0; width: 22px; height: 22px; margin-left: 0; opacity: 0; z-index: 5; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(15,23,42,.35)); animation: favCursor var(--fav-T) linear infinite; }
+.fav-cursor svg { width: 100%; height: 100%; display: block; }
+@keyframes favCursor {
+  0%, 14%  { opacity: 0; translate: 120px 190px; scale: 1; }
+  18%      { opacity: 1; translate: 110px 180px; animation-timing-function: cubic-bezier(.65,0,.35,1); }
+  32%      { opacity: 1; translate: 28px 128px; scale: 1; }
+  34%      { translate: 28px 128px; scale: .8; }
+  37%      { translate: 28px 128px; scale: 1; }
+  46%      { opacity: 1; translate: 40px 142px; }
+  52%, 100%{ opacity: 0; translate: 52px 156px; }
+}

@@ -1285,13 +1285,47 @@ export default function Dashboard() {
               </div>
             </div>
             
-            {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
-              <div className="mt-8 bg-white rounded-[32px] border border-slate-100 shadow-sm py-24 flex flex-col items-center text-center animate-in fade-in duration-500">
-                <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center text-red-400 mb-6 relative">
-                  <Heart size={48} className="relative z-10" />
-                  <div className="absolute inset-0 bg-red-400/20 rounded-full animate-ping opacity-50" style={{ animationDuration: '3s' }}></div>
+              <div className="mt-8 bg-transparent py-16 flex flex-col items-center text-center">
+                <div className="fav-empty-stage" aria-hidden="true">
+                  <div className="fav-ring"></div>
+                  <div className="fav-big">
+                    <svg viewBox="0 0 24 24">
+                      <defs>
+                        <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0" stopColor="#ff6b7f"/>
+                          <stop offset="1" stopColor="#e11d48"/>
+                        </linearGradient>
+                      </defs>
+                      <path className="fill" d="M12 21s-7.500-4.600-9.600-9.300C.9 8.200 2.800 4.500 6.400 4.500c2.100 0 3.700 1.100 5.600 3.100 1.900-2 3.500-3.100 5.600-3.100 3.600 0 5.500 3.700 4 7.200C19.500 16.400 12 21 12 21z"/>
+                      <path className="line" d="M12 21s-7.500-4.600-9.600-9.300C.9 8.200 2.800 4.500 6.400 4.500c2.100 0 3.700 1.100 5.600 3.100 1.900-2 3.500-3.100 5.600-3.100 3.600 0 5.500 3.700 4 7.200C19.500 16.400 12 21 12 21z"/>
+                    </svg>
+                  </div>
+
+                  <i className="fav-sp" style={{ '--x': '-62px', '--y': '-34px' } as any}></i>
+                  <i className="fav-sp" style={{ '--x': '60px', '--y': '-40px' } as any}></i>
+                  <i className="fav-sp" style={{ '--x': '-74px', '--y': '6px' } as any}></i>
+                  <i className="fav-sp" style={{ '--x': '72px', '--y': '10px' } as any}></i>
+                  <i className="fav-sp" style={{ '--x': '-30px', '--y': '-62px' } as any}></i>
+                  <i className="fav-sp" style={{ '--x': '34px', '--y': '-60px' } as any}></i>
+
+                  <div className="fav-card">
+                    <b className="tag">PDF</b>
+                    <i className="ln"></i><i className="ln"></i><i className="ln s"></i>
+                    <span className="name">Passport.pdf</span>
+                    <span className="fav-heart-btn">
+                      <i className="fav-bp" style={{ '--x': '-16px', '--y': '-14px' } as any}></i>
+                      <i className="fav-bp" style={{ '--x': '15px', '--y': '-16px' } as any}></i>
+                      <i className="fav-bp" style={{ '--x': '-19px', '--y': '4px' } as any}></i>
+                      <i className="fav-bp" style={{ '--x': '18px', '--y': '6px' } as any}></i>
+                      <i className="fav-bp" style={{ '--x': '0px', '--y': '-22px' } as any}></i>
+                      <i className="fav-bp" style={{ '--x': '-4px', '--y': '18px' } as any}></i>
+                      <svg viewBox="0 0 24 24"><path d="M12 21s-7.500-4.600-9.600-9.300C.9 8.200 2.800 4.500 6.400 4.500c2.100 0 3.700 1.100 5.600 3.100 1.900-2 3.500-3.100 5.600-3.100 3.600 0 5.500 3.700 4 7.200C19.500 16.400 12 21 12 21z"/></svg>
+                    </span>
+                  </div>
+
+                  <div className="fav-cursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 9.500-6.500 1.500 3.500 7-3 1.500-3.500-7L4 19.500z" fill="#0f172a" stroke="#fff" strokeWidth="1.600" strokeLinejoin="round"/></svg></div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">No favorites yet</h3>
+                <h3 className="text-xl font-bold text-slate-800 mb-2 mt-4">No favorites yet</h3>
                 <p className="text-slate-500 font-medium max-w-md">Click the heart icon on any file to add it to your favorites and access it quickly here.</p>
               </div>
             ) : (
