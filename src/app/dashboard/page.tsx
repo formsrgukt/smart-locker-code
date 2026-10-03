@@ -54,7 +54,7 @@ export default function Dashboard() {
   const [deleteFileSuccess, setDeleteFileSuccess] = useState(false);
   const [isCreateCollectionOpen, setIsCreateCollectionOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
-  const [collections, setCollections] = useState<{id?: string, name: string, count: number}[]>([]);
+  const [collections, setCollections] = useState<{id?: string, name: string, count: number, status?: string, deletedAt?: string}[]>([]);
   const [twoStepEnabled, setTwoStepEnabled] = useState(true);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
   const [defaultFolderView, setDefaultFolderView] = useState<'list' | 'grid'>('list');
@@ -458,29 +458,23 @@ export default function Dashboard() {
     setIsDeletingCollection(true);
     try {
       const filesToDelete = recentFiles.filter(f => f.collectionId === col.id);
+      const deletedAt = new Date().toISOString();
       
-      // Delete all files in the collection
+      // Move all files in the collection to trash
       for (const file of filesToDelete) {
         try {
-          const res = await fetch('/api/delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: file.url })
-          });
-          if (res.ok) {
-            await deleteDoc(doc(db, "files", file.id));
-          }
+          await updateDoc(doc(db, "files", file.id), { status: 'trash', deletedAt });
+          setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'trash', deletedAt } : f));
         } catch (e) {
-          console.error("Failed to delete file from collection:", e);
+          console.error("Failed to trash file from collection:", e);
         }
       }
       
-      // Delete the collection itself
-      await deleteDoc(doc(db, "collections", col.id));
+      // Move the collection itself to trash
+      await updateDoc(doc(db, "collections", col.id), { status: 'trash', deletedAt });
       
-      setRecentFiles(prev => prev.filter(f => f.collectionId !== col.id));
-      setCollections(prev => prev.filter(c => c.id !== col.id));
-      setActiveTab('Collections');
+      setCollections(prev => prev.map(c => c.id === col.id ? { ...c, status: 'trash', deletedAt } : c));
+      setActiveTab('Trash');
       
       setIsDeletingCollection(false);
       setDeleteCollectionSuccess(true);
@@ -502,7 +496,7 @@ export default function Dashboard() {
     const name = newCollectionName.trim();
     if (!name || !user) return;
     
-    if (collections.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    if (activeCollections.some(c => c.name.toLowerCase() === name.toLowerCase())) {
       showToast("Duplicate Collection", `A collection named '${name}' already exists.`, "error");
       return;
     }
@@ -625,6 +619,8 @@ export default function Dashboard() {
   // Calculate dynamic stats
   const activeFiles = recentFiles.filter(f => f.status !== 'trash');
   const trashFiles = recentFiles.filter(f => f.status === 'trash');
+  const activeCollections = collections.filter(c => c.status !== 'trash');
+  const trashCollections = collections.filter(c => c.status === 'trash');
 
   const totalDocuments = activeFiles.length;
   const totalSizeBytes = activeFiles.reduce((sum, file) => sum + (file.size || 0), 0);
@@ -637,7 +633,7 @@ export default function Dashboard() {
   // Assuming 10 GB total for progress bar (mock storage limit)
   const storagePercent = Math.min(100, (totalSizeBytes / (10 * 1024 * 1024 * 1024)) * 100).toFixed(1);
   
-  const collectionsCount = collections.length;
+  const collectionsCount = activeCollections.length;
 
   const unorganizedFiles = activeFiles.filter((f: any) => !f.collectionId && !f.categoryId);
 
@@ -831,14 +827,14 @@ export default function Dashboard() {
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Your Collections</h3>
                   <button onClick={() => setActiveTab('Collections')} className="text-sm text-blue-600 font-medium hover:text-blue-700">View all</button>
                 </div>
-                {collections.length === 0 ? (
+                {activeCollections.length === 0 ? (
                   <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center">
                     <Folder className="text-slate-300 mb-2" size={32} />
                     <p className="text-sm text-slate-500">No collections yet.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {collections.slice(0, 4).map((col, i) => {
+                    {activeCollections.slice(0, 4).map((col, i) => {
                       const itemCount = activeFiles.filter((f: any) => f.collectionId === col.id).length;
                       return (
                         <div key={i} onClick={() => setActiveTab('Collection:' + col.id)} className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center">
@@ -1132,9 +1128,9 @@ export default function Dashboard() {
                </div>
             </div>
             
-            {collections.length === 0 ? (
+            {activeCollections.length === 0 ? (
                <div className="mt-4 bg-transparent py-4 flex flex-col items-center text-center">
-                  <div className="overflow-hidden w-full flex justify-center mt-4">
+                  <div className="overflow-visible w-full flex justify-center mt-4 py-8 px-4">
                     <div className="col-app" style={{ transform: "scale(min(1, calc((100vw - 64px) / 920)))", transformOrigin: "top center" } as any}>
                       {/* header */}
                       <div className="col-head">
@@ -1200,7 +1196,7 @@ export default function Dashboard() {
                </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {collections.map((col, i) => {
+                {activeCollections.map((col, i) => {
                   const itemCount = activeFiles.filter((f: any) => f.collectionId === col.id).length;
                   return (
                     <div key={i} onClick={() => setActiveTab('Collection:' + col.id)} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center">
@@ -1264,7 +1260,7 @@ export default function Dashboard() {
             )}
             {(() => {
                const collectionId = activeTab.split(':')[1];
-               const col = collections.find(c => c.id === collectionId);
+               const col = activeCollections.find(c => c.id === collectionId);
                const collectionFiles = activeFiles.filter((f: any) => f.collectionId === collectionId);
                return (
                  <>

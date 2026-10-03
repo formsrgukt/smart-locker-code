@@ -404,7 +404,7 @@ button {
 }
 
 /* ---------- modal ---------- */
-.col-dim { inset: -100vw; z-index: 10; background: rgba(15,23,42,.32); backdrop-filter: blur(1.5px); opacity: 0; pointer-events: none; animation: colDim var(--col-T) infinite; }
+.col-dim { inset: -20px; z-index: 10; border-radius: 36px; background: rgba(15,23,42,.32); backdrop-filter: blur(1.5px); opacity: 0; pointer-events: none; animation: colDim var(--col-T) infinite; }
 @keyframes colDim { 0%, 18.5% { opacity: 0; } 20.5%, 65% { opacity: 1; } 68%, 100% { opacity: 0; } }
 .col-modal {
   left: 260px; top: 92px; width: 400px; height: 222px; padding: 24px; z-index: 11; border-radius: 24px; background: #fff;
