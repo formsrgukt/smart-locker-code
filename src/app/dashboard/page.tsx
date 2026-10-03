@@ -385,6 +385,66 @@ export default function Dashboard() {
     }
   };
 
+  const restoreFile = async (e: React.MouseEvent, file: any) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to restore ${file.name}?`)) return;
+    try {
+      await updateDoc(doc(db, "files", file.id), { status: 'active' });
+      setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'active' } : f));
+      showToast("Restored", "File has been restored successfully.");
+    } catch (error) {
+      showToast("Error", "Could not restore file", "error");
+    }
+  };
+
+  const permanentlyDeleteSingleFile = async (e: React.MouseEvent, file: any) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to permanently delete ${file.name}? This cannot be undone.`)) return;
+    try {
+      fetch('/api/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: file.url })
+      }).catch(err => console.error('Background GitHub delete error:', err));
+      
+      await deleteDoc(doc(db, "files", file.id));
+      setRecentFiles(prev => prev.filter(f => f.id !== file.id));
+      showToast("Deleted", "File permanently deleted.");
+    } catch (error) {
+      showToast("Error", "Could not delete file", "error");
+    }
+  };
+
+  const restoreFile = async (e: React.MouseEvent, file: any) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to restore ${file.name}?`)) return;
+    try {
+      await updateDoc(doc(db, "files", file.id), { status: 'active' });
+      setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'active' } : f));
+      showToast("Restored", "File has been restored successfully.");
+    } catch (error) {
+      showToast("Error", "Could not restore file", "error");
+    }
+  };
+
+  const permanentlyDeleteSingleFile = async (e: React.MouseEvent, file: any) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to permanently delete ${file.name}? This cannot be undone.`)) return;
+    try {
+      fetch('/api/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: file.url })
+      }).catch(err => console.error('Background GitHub delete error:', err));
+      
+      await deleteDoc(doc(db, "files", file.id));
+      setRecentFiles(prev => prev.filter(f => f.id !== file.id));
+      showToast("Deleted", "File permanently deleted.");
+    } catch (error) {
+      showToast("Error", "Could not delete file", "error");
+    }
+  };
+
   const confirmDeleteCollection = async () => {
     if (!deleteConfirmCollection) return;
     const col = deleteConfirmCollection;
@@ -1528,6 +1588,10 @@ export default function Dashboard() {
                           <h4 className="font-medium text-sm text-slate-800 line-through">{file.name}</h4>
                           <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={(e) => restoreFile(e, file)} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">Restore</button>
+                        <button onClick={(e) => permanentlyDeleteSingleFile(e, file)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Permanently Delete"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   ))}
