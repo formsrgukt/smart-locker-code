@@ -13,6 +13,7 @@ import LoaderAnimation from '@/components/LoaderAnimation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState('');
@@ -159,10 +160,12 @@ export default function LoginPage() {
           
           // Otherwise, proceed to ask for OTP
           setUser(currentUser);
+          setIsCheckingAuth(false);
         }
       } else {
         setUser(null);
         setShowOtp(false);
+        setIsCheckingAuth(false);
       }
     });
     return () => unsubscribe();
@@ -300,6 +303,14 @@ export default function LoginPage() {
     sessionStorage.removeItem('expectedOtp');
     await signOut(auth);
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-200">
+        <LoaderAnimation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-200 selection:bg-blue-100 selection:text-blue-900 p-4 md:p-8">
