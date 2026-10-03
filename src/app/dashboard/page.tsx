@@ -1670,13 +1670,13 @@ export default function Dashboard() {
           </div>
         ) : activeTab === 'Recent' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                <Clock size={24} />
+            <div className="flex items-center gap-4 mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 shrink-0">
+                <Clock size={20} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">Recent Documents</h2>
-                <p className="text-slate-500 text-sm">Your most recently uploaded or accessed files.</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Recent Documents</h2>
+                <p className="text-sm text-slate-500">Your most recently uploaded or accessed files.</p>
               </div>
             </div>
             
