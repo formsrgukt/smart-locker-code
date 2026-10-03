@@ -6,7 +6,7 @@ import {
   Settings, Shield, Search, Bell, Plus, Upload, Scan, FileBadge, 
   GraduationCap, Briefcase, File, MoreVertical, Star, Download,
   CheckCircle2, Sparkles, Activity, ShieldCheck, ChevronRight, ChevronLeft,
-  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle
+  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle, LayoutGrid
 } from 'lucide-react';
 
 import dynamic from 'next/dynamic';
@@ -570,6 +570,7 @@ export default function Dashboard() {
           <nav className="space-y-1">
             <NavItem icon={<Home size={20}/>} label="Home" active={activeTab === 'Home'} onClick={() => setActiveTab('Home')} />
             <NavItem icon={<FileText size={20}/>} label="Documents" active={activeTab === 'Documents'} onClick={() => setActiveTab('Documents')} />
+            <NavItem icon={<LayoutGrid size={20}/>} label="Categories" active={activeTab === 'Categories'} onClick={() => setActiveTab('Categories')} />
             <NavItem icon={<User size={20}/>} label="Personal Info" active={activeTab === 'Personal Info'} onClick={() => setActiveTab('Personal Info')} />
             <NavItem icon={<Folder size={20}/>} label="Collections" active={activeTab === 'Collections'} onClick={() => setActiveTab('Collections')} />
             <NavItem icon={<Heart size={20}/>} label="Favorites" active={activeTab === 'Favorites'} onClick={() => setActiveTab('Favorites')} />
@@ -929,6 +930,32 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+          </div>
+        ) : activeTab === 'Categories' ? (
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
+            <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 uppercase tracking-wider">Your documents</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { name: 'Identity', count: 12, icon: <User size={24}/>, color: 'text-blue-600', bg: 'bg-blue-50' },
+                { name: 'Education', count: 36, icon: <GraduationCap size={24}/>, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { name: 'Career', count: 18, icon: <Briefcase size={24}/>, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                { name: 'Projects', count: 24, icon: <Folder size={24}/>, color: 'text-purple-600', bg: 'bg-purple-50' },
+                { name: 'Personal', count: 15, icon: <Heart size={24}/>, color: 'text-rose-600', bg: 'bg-rose-50' },
+                { name: 'Other', count: 23, icon: <File size={24}/>, color: 'text-slate-600', bg: 'bg-slate-100' },
+              ].map((cat, i) => (
+                <div key={i} onClick={() => setActiveTab('Documents')} className="bg-white p-6 rounded-[24px] border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col gap-4">
+                  <div className={`w-12 h-12 rounded-2xl ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    {cat.icon}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-lg">{cat.name}</h4>
+                    <p className="text-sm text-slate-500 font-medium">{cat.count} items</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : activeTab === 'Personal Info' ? (
           <PersonalInfoView user={user} showToast={showToast} setGlobalProfileData={setProfileData} />
@@ -1608,6 +1635,7 @@ export default function Dashboard() {
           </div>
 
           <MobileNavItem icon={<Search size={24}/>} label="Search" active={activeTab === 'Search'} onClick={() => setActiveTab('Search')} />
+          <MobileNavItem icon={<LayoutGrid size={24}/>} label="Categories" active={activeTab === 'Categories'} onClick={() => setActiveTab('Categories')} />
           <MobileNavItem icon={<User size={24}/>} label="Profile" active={activeTab === 'Personal Info'} onClick={() => setActiveTab('Personal Info')} />
         </div>
       </nav>
