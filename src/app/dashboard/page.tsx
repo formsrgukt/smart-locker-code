@@ -1161,13 +1161,8 @@ export default function Dashboard() {
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 uppercase tracking-wider">Your documents</h2>
-               <div className="flex items-center gap-3">
-                 <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center">
-                   <LayoutGrid size={20} />
-                 </div>
-                 <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                   <Plus size={18} /> New Category
-                 </button>
+               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                 <LayoutGrid size={20} />
                </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1189,21 +1184,6 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
-              
-              {activeCollections.map((col, i) => {
-                  const itemCount = activeFiles.filter((f: any) => f.collectionId === col.id).length;
-                  return (
-                    <div key={'col-'+i} onClick={() => setActiveTab('Collection:' + col.id)} className="bg-white p-6 rounded-[24px] border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Folder size={24}/>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-lg">{col.name}</h4>
-                        <p className="text-sm text-slate-500 font-medium">{itemCount} items</p>
-                      </div>
-                    </div>
-                  );
-              })}
             </div>
           </div>
         ) : activeTab === 'Personal Info' ? (
