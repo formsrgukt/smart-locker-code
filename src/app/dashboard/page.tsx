@@ -534,9 +534,7 @@ export default function Dashboard() {
   // Assuming 10 GB total for progress bar (mock storage limit)
   const storagePercent = Math.min(100, (totalSizeBytes / (10 * 1024 * 1024 * 1024)) * 100).toFixed(1);
   
-  // Estimate "Collections" based on unique main MIME types (e.g., image, application, text)
-  const uniqueTypes = new Set(recentFiles.map(f => f.type?.split('/')[0] || 'other'));
-  const collectionsCount = Math.max(1, uniqueTypes.size); // at least 1 if empty to look nice, or 0? Let's say uniqueTypes.size
+  const collectionsCount = collections.length;
 
   const unorganizedFiles = recentFiles.filter((f: any) => !f.collectionId);
 
