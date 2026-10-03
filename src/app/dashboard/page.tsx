@@ -1286,10 +1286,13 @@ export default function Dashboard() {
             </div>
             
             {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-500">
-                <Heart size={48} className="text-slate-200 mb-4" />
-                <h3 className="text-xl font-bold text-slate-900 mb-2">No favorites yet</h3>
-                <p className="text-slate-500">Click the heart icon on any file to add it to your favorites.</p>
+              <div className="mt-8 bg-white rounded-[32px] border border-slate-100 shadow-sm py-24 flex flex-col items-center text-center animate-in fade-in duration-500">
+                <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center text-red-400 mb-6 relative">
+                  <Heart size={48} className="relative z-10" />
+                  <div className="absolute inset-0 bg-red-400/20 rounded-full animate-ping opacity-50" style={{ animationDuration: '3s' }}></div>
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">No favorites yet</h3>
+                <p className="text-slate-500 font-medium max-w-md">Click the heart icon on any file to add it to your favorites and access it quickly here.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
