@@ -1499,18 +1499,6 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-        ) : (
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-300 min-h-[60vh]">
-            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
-              {activeTab === 'Collections' && <Folder size={32} />}
-              {activeTab === 'Favorites' && <Heart size={32} />}
-              {activeTab === 'Recent' && <Clock size={32} />}
-              {activeTab === 'Settings' && <Settings size={32} />}
-              {activeTab === 'Search' && <Search size={32} />}
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">{activeTab}</h2>
-            <p className="text-slate-500 max-w-md mx-auto">This section is currently under construction. Check back soon for updates to your digital locker.</p>
-          </div>
         ) : activeTab === 'Trash' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -1546,6 +1534,18 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-300 min-h-[60vh]">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
+              {activeTab === 'Collections' && <Folder size={32} />}
+              {activeTab === 'Favorites' && <Heart size={32} />}
+              {activeTab === 'Recent' && <Clock size={32} />}
+              {activeTab === 'Settings' && <Settings size={32} />}
+              {activeTab === 'Search' && <Search size={32} />}
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">{activeTab}</h2>
+            <p className="text-slate-500 max-w-md mx-auto">This section is currently under construction. Check back soon for updates to your digital locker.</p>
           </div>
         )}
       </main>
