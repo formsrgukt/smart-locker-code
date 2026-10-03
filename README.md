@@ -1,8 +1,8 @@
 <div>
-  <img src="./public/smart-locker-icon.svg" alt="Smart Locker Logo" width="120"    <h1> Smart Locker</h1>
+  <img src="./public/smart-locker-icon.svg" alt="Smart Locker Logo" width="120"  
 />
 </div>
-
+  <h1> Smart Locker</h1>
 > **A secure, modern, and lightning-fast digital locker for your personal information, documents, and private files.**
 
 ## 🌟 Features
