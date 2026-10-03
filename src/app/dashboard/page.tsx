@@ -126,6 +126,12 @@ export default function Dashboard() {
   const dragCounter = useRef(0);
 
   useEffect(() => {
+    setSearchQuery('');
+    setFilterType('all');
+    setSortBy('newest');
+  }, [activeTab]);
+
+  useEffect(() => {
     if (!user) return;
     const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (userDoc) => {
       if (userDoc.exists()) {
