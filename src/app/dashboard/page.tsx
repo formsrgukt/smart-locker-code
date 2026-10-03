@@ -1073,7 +1073,7 @@ export default function Dashboard() {
             )}
           </div>
         ) : activeTab === 'Security' ? (
-          <div className="p-4 sm:p-8 max-w-4xl mx-auto w-full animate-in fade-in zoom-in duration-300">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in zoom-in duration-300">
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-100 shadow-sm mb-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
