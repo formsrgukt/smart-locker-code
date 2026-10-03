@@ -519,7 +519,7 @@ export default function Dashboard() {
         setCreateCollectionSuccess(false);
         setIsCreateCollectionOpen(false);
         setNewCollectionName('');
-        setActiveTab('Collections');
+        setActiveTab('Collection:' + tempId);
       }, 800);
       
       // 2. Perform network request in background
@@ -532,6 +532,7 @@ export default function Dashboard() {
       }).then(docRef => {
         // Update temp ID with real ID from database
         setCollections(prev => prev.map(c => c.id === tempId ? { ...c, id: docRef.id } : c));
+        setActiveTab(current => current === 'Collection:' + tempId ? 'Collection:' + docRef.id : current);
         showToast("Category created", `Successfully created the '${name}' category.`, "success");
       }).catch(error => {
         console.error("Error creating collection:", error);
