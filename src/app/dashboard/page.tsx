@@ -354,7 +354,6 @@ export default function Dashboard() {
       setTimeout(() => {
         setDeleteFileSuccess(false);
         setDeleteConfirmFile(null);
-        setActiveTab('Trash');
         showToast("Moved to Trash", "File has been moved to trash.");
       }, 1500);
     } catch (error) {
