@@ -54,6 +54,8 @@ export default function Dashboard() {
   const [deleteFileSuccess, setDeleteFileSuccess] = useState(false);
   const [isCreateCollectionOpen, setIsCreateCollectionOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
+  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+  const [createCollectionSuccess, setCreateCollectionSuccess] = useState(false);
   const [collections, setCollections] = useState<{id?: string, name: string, count: number, status?: string, deletedAt?: string}[]>([]);
   const [twoStepEnabled, setTwoStepEnabled] = useState(true);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
@@ -501,6 +503,7 @@ export default function Dashboard() {
       return;
     }
     
+    setIsCreatingCollection(true);
     try {
       const docRef = await addDoc(collection(db, "collections"), {
         userId: user.uid,
@@ -510,11 +513,19 @@ export default function Dashboard() {
       });
       setCollections(prev => [...prev, { id: docRef.id, name, count: 0 }]);
       showToast("Collection created", `Successfully created the '${name}' collection.`, "success");
-      setIsCreateCollectionOpen(false);
-      setNewCollectionName('');
-      setActiveTab('Collections');
+      
+      setIsCreatingCollection(false);
+      setCreateCollectionSuccess(true);
+      setTimeout(() => {
+        setCreateCollectionSuccess(false);
+        setIsCreateCollectionOpen(false);
+        setNewCollectionName('');
+        setActiveTab('Collections');
+      }, 1500);
+      
     } catch (error) {
       console.error("Error creating collection:", error);
+      setIsCreatingCollection(false);
       showToast("Error", "Failed to create collection.", "error");
     }
   };
@@ -1957,8 +1968,21 @@ export default function Dashboard() {
                 />
               </div>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setIsCreateCollectionOpen(false)} className="flex-1 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
-                <button type="submit" disabled={!newCollectionName.trim()} className="flex-1 py-3 font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 rounded-xl transition-colors shadow-sm">Create</button>
+                <button type="button" onClick={() => setIsCreateCollectionOpen(false)} disabled={isCreatingCollection || createCollectionSuccess} className="flex-1 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50">Cancel</button>
+                <button type="submit" disabled={!newCollectionName.trim() || isCreatingCollection || createCollectionSuccess} className="relative flex-1 py-3 font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 rounded-xl transition-colors shadow-sm flex items-center justify-center min-w-[120px]">
+                  {createCollectionSuccess ? (
+                    <span className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[3] rounded" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                       Created
+                    </span>
+                  ) : isCreatingCollection ? (
+                    <span className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                       <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></div>
+                    </span>
+                  ) : (
+                    <span className="animate-in fade-in zoom-in duration-200">Create</span>
+                  )}
+                </button>
               </div>
             </form>
           </div>
