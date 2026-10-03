@@ -58,6 +58,9 @@ export default function Dashboard() {
   const [twoStepEnabled, setTwoStepEnabled] = useState(true);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
   const [defaultFolderView, setDefaultFolderView] = useState<'list' | 'grid'>('list');
+  const [restoreConfirmFile, setRestoreConfirmFile] = useState<any | null>(null);
+  const [permanentDeleteConfirmFile, setPermanentDeleteConfirmFile] = useState<any | null>(null);
+  const [isConfirmEmptyTrashOpen, setIsConfirmEmptyTrashOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
@@ -361,8 +364,6 @@ export default function Dashboard() {
   };
 
   const emptyTrash = async () => {
-    if (!window.confirm("Are you sure you want to permanently delete all files in the trash? This action cannot be undone.")) return;
-    
     setIsEmptyingTrash(true);
     try {
       const trashFilesList = recentFiles.filter(f => f.status === 'trash');
@@ -377,6 +378,7 @@ export default function Dashboard() {
       
       setRecentFiles(prev => prev.filter(f => f.status !== 'trash'));
       showToast("Trash Emptied", "All files have been permanently deleted.");
+      setIsConfirmEmptyTrashOpen(false);
     } catch (error) {
       console.error('Empty trash error:', error);
       showToast("Error", "Failed to empty trash.", "error");
@@ -385,22 +387,24 @@ export default function Dashboard() {
     }
   };
 
-  const restoreFile = async (e: React.MouseEvent, file: any) => {
-    e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to restore ${file.name}?`)) return;
+  const confirmRestoreFile = async () => {
+    if (!restoreConfirmFile) return;
     try {
+      const file = restoreConfirmFile;
       await updateDoc(doc(db, "files", file.id), { status: 'active' });
       setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'active' } : f));
       showToast("Restored", "File has been restored successfully.");
     } catch (error) {
       showToast("Error", "Could not restore file", "error");
+    } finally {
+      setRestoreConfirmFile(null);
     }
   };
 
-  const permanentlyDeleteSingleFile = async (e: React.MouseEvent, file: any) => {
-    e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to permanently delete ${file.name}? This cannot be undone.`)) return;
+  const confirmPermanentlyDeleteSingleFile = async () => {
+    if (!permanentDeleteConfirmFile) return;
     try {
+      const file = permanentDeleteConfirmFile;
       fetch('/api/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -412,6 +416,8 @@ export default function Dashboard() {
       showToast("Deleted", "File permanently deleted.");
     } catch (error) {
       showToast("Error", "Could not delete file", "error");
+    } finally {
+      setPermanentDeleteConfirmFile(null);
     }
   };
 
@@ -1534,7 +1540,7 @@ export default function Dashboard() {
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Trash</h2>
-               <button onClick={emptyTrash} disabled={isEmptyingTrash || trashFiles.length === 0} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
+               <button onClick={() => setIsConfirmEmptyTrashOpen(true)} disabled={isEmptyingTrash || trashFiles.length === 0} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
                  {isEmptyingTrash ? <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <Trash2 size={18} />} 
                  {isEmptyingTrash ? 'Emptying...' : 'Clear Trash'}
                </button>
@@ -1561,8 +1567,8 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={(e) => restoreFile(e, file)} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">Restore</button>
-                        <button onClick={(e) => permanentlyDeleteSingleFile(e, file)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Permanently Delete"><Trash2 size={16} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); setRestoreConfirmFile(file); }} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">Restore</button>
+                        <button onClick={(e) => { e.stopPropagation(); setPermanentDeleteConfirmFile(file); }} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Permanently Delete"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   ))}
@@ -1893,6 +1899,81 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* RESTORE CONFIRMATION MODAL */}
+      {restoreConfirmFile && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setRestoreConfirmFile(null)}>
+          <div className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-center" onClick={e => e.stopPropagation()}>
+            <div className="p-8">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileBadge size={32} />
+              </div>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">Restore File?</h3>
+              <p className="text-slate-500 text-sm">
+                Are you sure you want to restore <strong className="text-slate-700">{restoreConfirmFile.name}</strong> from the trash?
+              </p>
+            </div>
+            <div className="flex border-t border-slate-100">
+              <button onClick={() => setRestoreConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+              <div className="w-[1px] bg-slate-100"></div>
+              <button onClick={confirmRestoreFile} className="flex-1 py-4 font-bold text-emerald-600 hover:bg-emerald-50 transition-colors">Restore</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PERMANENT DELETE SINGLE FILE MODAL */}
+      {permanentDeleteConfirmFile && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setPermanentDeleteConfirmFile(null)}>
+          <div className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-center" onClick={e => e.stopPropagation()}>
+            <div className="p-8">
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} />
+              </div>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">Permanently Delete?</h3>
+              <p className="text-slate-500 text-sm">
+                Are you sure you want to permanently delete <strong className="text-slate-700">{permanentDeleteConfirmFile.name}</strong>? This cannot be undone.
+              </p>
+            </div>
+            <div className="flex border-t border-slate-100">
+              <button onClick={() => setPermanentDeleteConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+              <div className="w-[1px] bg-slate-100"></div>
+              <button onClick={confirmPermanentlyDeleteSingleFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EMPTY TRASH MODAL */}
+      {isConfirmEmptyTrashOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsConfirmEmptyTrashOpen(false)}>
+          <div className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-center" onClick={e => e.stopPropagation()}>
+            {isEmptyingTrash ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="w-16 h-16 border-4 border-slate-100 border-t-red-500 rounded-full animate-spin mb-6"></div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Emptying Trash...</h3>
+                <p className="text-slate-500 text-sm">Removing all files securely.</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-8">
+                  <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Trash2 size={32} />
+                  </div>
+                  <h3 className="font-bold text-xl text-slate-900 mb-2">Empty Trash?</h3>
+                  <p className="text-slate-500 text-sm">
+                    Are you sure you want to permanently delete all files in the trash? This action cannot be undone.
+                  </p>
+                </div>
+                <div className="flex border-t border-slate-100">
+                  <button onClick={() => setIsConfirmEmptyTrashOpen(false)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                  <div className="w-[1px] bg-slate-100"></div>
+                  <button onClick={emptyTrash} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Empty Trash</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
