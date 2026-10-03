@@ -1275,13 +1275,15 @@ export default function Dashboard() {
           </div>
         ) : activeTab === 'Favorites' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
-                <Heart size={24} className="fill-red-500" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900">Favorites</h2>
-                <p className="text-slate-500 text-sm">Your most important files and documents.</p>
+            <div className="flex items-center justify-between mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600 shrink-0">
+                  <Heart size={24} className="fill-red-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Favorites</h2>
+                  <p className="text-slate-500 text-sm">Your most important files and documents.</p>
+                </div>
               </div>
             </div>
             {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
