@@ -1284,7 +1284,7 @@ export default function Dashboard() {
                 <p className="text-slate-500 text-sm">Your most important files and documents.</p>
               </div>
             </div>
-            
+            {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
               <div className="mt-8 bg-transparent py-16 flex flex-col items-center text-center">
                 <div className="fav-empty-stage" aria-hidden="true">
                   <div className="fav-ring"></div>
