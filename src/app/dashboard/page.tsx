@@ -504,29 +504,41 @@ export default function Dashboard() {
     }
     
     setIsCreatingCollection(true);
+    
+    const tempId = "temp-" + Date.now();
+    
+    // 1. Optimistically update UI
+    setCollections(prev => [...prev, { id: tempId, name, count: 0 }]);
+    setIsCreatingCollection(false);
+    setCreateCollectionSuccess(true);
+    
+    // Close modal very quickly
+    setTimeout(() => {
+      setCreateCollectionSuccess(false);
+      setIsCreateCollectionOpen(false);
+      setNewCollectionName('');
+      setActiveTab('Collections');
+    }, 600);
+    
+    // 2. Perform network request in background
     try {
-      const docRef = await addDoc(collection(db, "collections"), {
+      addDoc(collection(db, "collections"), {
         userId: user.uid,
         name,
         count: 0,
         createdAt: new Date().toISOString()
+      }).then(docRef => {
+        // Update temp ID with real ID from database
+        setCollections(prev => prev.map(c => c.id === tempId ? { ...c, id: docRef.id } : c));
+        showToast("Category created", `Successfully created the '${name}' category.`, "success");
+      }).catch(error => {
+        console.error("Error creating collection:", error);
+        // Rollback on failure
+        setCollections(prev => prev.filter(c => c.id !== tempId));
+        showToast("Error", "Failed to create category.", "error");
       });
-      setCollections(prev => [...prev, { id: docRef.id, name, count: 0 }]);
-      showToast("Collection created", `Successfully created the '${name}' collection.`, "success");
-      
-      setIsCreatingCollection(false);
-      setCreateCollectionSuccess(true);
-      setTimeout(() => {
-        setCreateCollectionSuccess(false);
-        setIsCreateCollectionOpen(false);
-        setNewCollectionName('');
-        setActiveTab('Collections');
-      }, 1500);
-      
     } catch (error) {
       console.error("Error creating collection:", error);
-      setIsCreatingCollection(false);
-      showToast("Error", "Failed to create collection.", "error");
     }
   };
 
