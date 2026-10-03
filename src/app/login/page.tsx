@@ -455,8 +455,12 @@ export default function LoginPage() {
 
         </div>
 
-        <div className="hidden md:flex relative z-10 w-full md:w-1/2 items-center justify-center bg-slate-50/50 rounded-3xl p-6 border border-slate-100/50 min-h-[400px]">
-          <LoaderAnimation className="scale-[1.15] drop-shadow-2xl" />
+        <div className="hidden md:flex flex-col relative z-10 w-full md:w-1/2 items-center justify-center bg-slate-50/50 rounded-3xl p-6 border border-slate-100/50 min-h-[400px]">
+          <div className="w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mb-6 drop-shadow-xl">
+            <ShieldCheck size={64} />
+          </div>
+          <h3 className="text-xl font-semibold text-slate-800 mb-2">Secure & Private</h3>
+          <p className="text-sm text-slate-500 text-center max-w-xs">Your personal documents are encrypted and safely stored in your digital locker.</p>
         </div>
       </div>
     </div>
