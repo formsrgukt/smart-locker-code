@@ -556,6 +556,34 @@ export default function Dashboard() {
   const filledFields = totalFields.filter(isFieldComplete).length;
   const profileCompletionPercentage = totalFields.length > 0 ? Math.round((filledFields / totalFields.length) * 100) : 0;
 
+  const getCategoryCounts = () => {
+    const counts = { Identity: 0, Education: 0, Career: 0, Projects: 0, Personal: 0, Other: 0 };
+    recentFiles.forEach(file => {
+      const name = file.name?.toLowerCase() || '';
+      if (name.match(/id|passport|aadhaar|pan|license|driving|card/)) counts.Identity++;
+      else if (name.match(/certificate|degree|mark|transcript|school|university|college|diploma/)) counts.Education++;
+      else if (name.match(/resume|cv|offer|contract|salary|payslip|relieving|experience/)) counts.Career++;
+      else if (name.match(/project|code|report|presentation/)) counts.Projects++;
+      else if (name.match(/photo|family|letter|ticket|receipt|bill/)) counts.Personal++;
+      else counts.Other++;
+    });
+    return counts;
+  };
+  const categoryCounts = getCategoryCounts();
+
+  const getCategoryFiles = (files: any[], catName: string) => {
+    return files.filter(f => {
+      const name = f.name?.toLowerCase() || '';
+      if (catName === 'Identity') return name.match(/id|passport|aadhaar|pan|license|driving|card/);
+      if (catName === 'Education') return name.match(/certificate|degree|mark|transcript|school|university|college|diploma/);
+      if (catName === 'Career') return name.match(/resume|cv|offer|contract|salary|payslip|relieving|experience/);
+      if (catName === 'Projects') return name.match(/project|code|report|presentation/);
+      if (catName === 'Personal') return name.match(/photo|family|letter|ticket|receipt|bill/);
+      if (catName === 'Other') return !name.match(/id|passport|aadhaar|pan|license|driving|card|certificate|degree|mark|transcript|school|university|college|diploma|resume|cv|offer|contract|salary|payslip|relieving|experience|project|code|report|presentation|photo|family|letter|ticket|receipt|bill/);
+      return true;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       
@@ -768,14 +796,14 @@ export default function Dashboard() {
                 <h3 className="text-sm font-semibold text-slate-900 mb-4 uppercase tracking-wider">Your documents</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { name: 'Identity', count: 12, icon: <User size={16}/>, color: 'text-blue-600', bg: 'bg-blue-50' },
-                    { name: 'Education', count: 36, icon: <GraduationCap size={16}/>, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { name: 'Career', count: 18, icon: <Briefcase size={16}/>, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                    { name: 'Projects', count: 24, icon: <Folder size={16}/>, color: 'text-purple-600', bg: 'bg-purple-50' },
-                    { name: 'Personal', count: 15, icon: <Heart size={16}/>, color: 'text-rose-600', bg: 'bg-rose-50' },
-                    { name: 'Other', count: 23, icon: <File size={16}/>, color: 'text-slate-600', bg: 'bg-slate-100' },
+                    { name: 'Identity', count: categoryCounts.Identity, icon: <User size={16}/>, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { name: 'Education', count: categoryCounts.Education, icon: <GraduationCap size={16}/>, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                    { name: 'Career', count: categoryCounts.Career, icon: <Briefcase size={16}/>, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                    { name: 'Projects', count: categoryCounts.Projects, icon: <Folder size={16}/>, color: 'text-purple-600', bg: 'bg-purple-50' },
+                    { name: 'Personal', count: categoryCounts.Personal, icon: <Heart size={16}/>, color: 'text-rose-600', bg: 'bg-rose-50' },
+                    { name: 'Other', count: categoryCounts.Other, icon: <File size={16}/>, color: 'text-slate-600', bg: 'bg-slate-100' },
                   ].map((cat, i) => (
-                    <div key={i} className="bg-white p-4 rounded-[20px] border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col gap-3">
+                    <div key={i} onClick={() => setActiveTab('Category:' + cat.name)} className="bg-white p-4 rounded-[20px] border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col gap-3">
                       <div className={`w-8 h-8 rounded-lg ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                         {cat.icon}
                       </div>
@@ -863,24 +891,40 @@ export default function Dashboard() {
             </div>
           </div>
           </div>
-        ) : activeTab === 'Documents' ? (
+        ) : activeTab === 'Documents' || activeTab.startsWith('Category:') ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
-               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">All Documents</h2>
-               <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                 <Plus size={18} /> Upload New
-               </button>
+              <div className="flex items-center gap-4">
+                {activeTab.startsWith('Category:') && (
+                  <button onClick={() => setActiveTab('Categories')} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-50 shadow-sm border border-slate-100 hover:bg-slate-100 rounded-xl transition-colors">
+                    <ChevronLeft size={20}/>
+                  </button>
+                )}
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+                    {activeTab.startsWith('Category:') ? activeTab.split(':')[1] + ' Documents' : 'All Documents'}
+                  </h2>
+                  {activeTab.startsWith('Category:') && (
+                     <p className="text-sm text-slate-500">
+                       {getCategoryFiles(recentFiles, activeTab.split(':')[1]).length} items
+                     </p>
+                  )}
+                </div>
+              </div>
+              <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                <Plus size={18} /> Upload New
+              </button>
             </div>
             
              <FilterControls />
             
-            {getFilteredAndSortedFiles(unorganizedFiles).length === 0 ? (
+            {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(recentFiles, activeTab.split(':')[1]) : unorganizedFiles).length === 0 ? (
                <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-12">
                  <EmptyState />
                </div>
             ) : defaultFolderView === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {getFilteredAndSortedFiles(unorganizedFiles).map((file, i) => (
+                {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(recentFiles, activeTab.split(':')[1]) : unorganizedFiles).map((file, i) => (
                   <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-blue-100 transition-all group cursor-pointer flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
                     <div className="w-full h-28 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-blue-400 group-hover:bg-blue-50/50 group-hover:scale-105 transition-all duration-300">
                       <FileText size={36} className="opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -903,7 +947,7 @@ export default function Dashboard() {
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
-                  {getFilteredAndSortedFiles(unorganizedFiles).map((file, i) => (
+                  {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(recentFiles, activeTab.split(':')[1]) : unorganizedFiles).map((file, i) => (
                     <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-blue-500 bg-blue-50">
@@ -938,14 +982,14 @@ export default function Dashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { name: 'Identity', count: 12, icon: <User size={24}/>, color: 'text-blue-600', bg: 'bg-blue-50' },
-                { name: 'Education', count: 36, icon: <GraduationCap size={24}/>, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                { name: 'Career', count: 18, icon: <Briefcase size={24}/>, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                { name: 'Projects', count: 24, icon: <Folder size={24}/>, color: 'text-purple-600', bg: 'bg-purple-50' },
-                { name: 'Personal', count: 15, icon: <Heart size={24}/>, color: 'text-rose-600', bg: 'bg-rose-50' },
-                { name: 'Other', count: 23, icon: <File size={24}/>, color: 'text-slate-600', bg: 'bg-slate-100' },
+                { name: 'Identity', count: categoryCounts.Identity, icon: <User size={24}/>, color: 'text-blue-600', bg: 'bg-blue-50' },
+                { name: 'Education', count: categoryCounts.Education, icon: <GraduationCap size={24}/>, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { name: 'Career', count: categoryCounts.Career, icon: <Briefcase size={24}/>, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                { name: 'Projects', count: categoryCounts.Projects, icon: <Folder size={24}/>, color: 'text-purple-600', bg: 'bg-purple-50' },
+                { name: 'Personal', count: categoryCounts.Personal, icon: <Heart size={24}/>, color: 'text-rose-600', bg: 'bg-rose-50' },
+                { name: 'Other', count: categoryCounts.Other, icon: <File size={24}/>, color: 'text-slate-600', bg: 'bg-slate-100' },
               ].map((cat, i) => (
-                <div key={i} onClick={() => setActiveTab('Documents')} className="bg-white p-6 rounded-[24px] border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col gap-4">
+                <div key={i} onClick={() => setActiveTab('Category:' + cat.name)} className="bg-white p-6 rounded-[24px] border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col gap-4">
                   <div className={`w-12 h-12 rounded-2xl ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                     {cat.icon}
                   </div>
