@@ -6,7 +6,7 @@ import {
   Settings, Shield, Search, Bell, Plus, Upload, Scan, FileBadge, 
   GraduationCap, Briefcase, File, MoreVertical, Star, Download,
   CheckCircle2, Sparkles, Activity, ShieldCheck, ChevronRight, ChevronLeft,
-  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle, LayoutGrid
+  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle, LayoutGrid, FolderOpen, Library
 } from 'lucide-react';
 
 import dynamic from 'next/dynamic';
@@ -926,9 +926,14 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
-              <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                <Plus size={18} /> Upload New
-              </button>
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center">
+                  <FolderOpen size={20} />
+                </div>
+                <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                  <Plus size={18} /> Upload New
+                </button>
+              </div>
             </div>
             
              <FilterControls />
@@ -1025,9 +1030,14 @@ export default function Dashboard() {
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Collections</h2>
-               <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                 <Plus size={18} /> New Collection
-               </button>
+               <div className="flex items-center gap-3">
+                 <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center">
+                   <Library size={20} />
+                 </div>
+                 <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                   <Plus size={18} /> New Collection
+                 </button>
+               </div>
             </div>
             
             {collections.length === 0 ? (
@@ -1113,13 +1123,18 @@ export default function Dashboard() {
                          <p className="text-sm text-slate-500">{collectionFiles.length} items</p>
                        </div>
                      </div>
-                     <div className="flex gap-2">
-                       <button onClick={() => { setDeleteConfirmCollection(col); setDeleteCollectionInput(''); }} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                         <Trash2 size={18} /> Delete Collection
-                       </button>
-                       <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                         <Upload size={18} /> Upload Here
-                       </button>
+                     <div className="flex items-center gap-3">
+                       <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center">
+                         <Folder size={20} />
+                       </div>
+                       <div className="flex gap-2">
+                         <button onClick={() => { setDeleteConfirmCollection(col); setDeleteCollectionInput(''); }} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                           <Trash2 size={18} /> Delete Collection
+                         </button>
+                         <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                           <Upload size={18} /> Upload Here
+                         </button>
+                       </div>
                      </div>
                    </div>
                    
