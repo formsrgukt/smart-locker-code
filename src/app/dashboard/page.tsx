@@ -334,33 +334,54 @@ export default function Dashboard() {
     setDeleteConfirmFile(file);
   };
 
+  const [isEmptyingTrash, setIsEmptyingTrash] = useState(false);
+
   const confirmDeleteFile = async () => {
     if (!deleteConfirmFile) return;
     const file = deleteConfirmFile;
     setIsDeletingFile(true);
     try {
-      // Fire and forget GitHub deletion to prevent UI blocking
-      fetch('/api/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: file.url })
-      }).catch(err => console.error('Background GitHub delete error:', err));
-
-      // Only await the fast Firebase database deletion
-      await deleteDoc(doc(db, "files", file.id));
-      setRecentFiles(prev => prev.filter(f => f.id !== file.id));
+      await updateDoc(doc(db, "files", file.id), { status: 'trash' });
+      setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'trash' } : f));
       
       setIsDeletingFile(false);
       setDeleteFileSuccess(true);
       setTimeout(() => {
         setDeleteFileSuccess(false);
         setDeleteConfirmFile(null);
-      }, 1000);
+        setActiveTab('Trash');
+        showToast("Moved to Trash", "File has been moved to trash.");
+      }, 1500);
     } catch (error) {
       console.error('Delete error:', error);
       setIsDeletingFile(false);
       setDeleteConfirmFile(null);
-      showToast("Failed to delete", "An error occurred while deleting the file.", "error");
+      showToast("Failed to move", "An error occurred while moving the file.", "error");
+    }
+  };
+
+  const emptyTrash = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete all files in the trash? This action cannot be undone.")) return;
+    
+    setIsEmptyingTrash(true);
+    try {
+      const trashFilesList = recentFiles.filter(f => f.status === 'trash');
+      for (const file of trashFilesList) {
+        fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: file.url })
+        }).catch(err => console.error('Background GitHub delete error:', err));
+        await deleteDoc(doc(db, "files", file.id));
+      }
+      
+      setRecentFiles(prev => prev.filter(f => f.status !== 'trash'));
+      showToast("Trash Emptied", "All files have been permanently deleted.");
+    } catch (error) {
+      console.error('Empty trash error:', error);
+      showToast("Error", "Failed to empty trash.", "error");
+    } finally {
+      setIsEmptyingTrash(false);
     }
   };
 
@@ -537,8 +558,11 @@ export default function Dashboard() {
   }
 
   // Calculate dynamic stats
-  const totalDocuments = recentFiles.length;
-  const totalSizeBytes = recentFiles.reduce((sum, file) => sum + (file.size || 0), 0);
+  const activeFiles = recentFiles.filter(f => f.status !== 'trash');
+  const trashFiles = recentFiles.filter(f => f.status === 'trash');
+
+  const totalDocuments = activeFiles.length;
+  const totalSizeBytes = activeFiles.reduce((sum, file) => sum + (file.size || 0), 0);
   const totalStorageGB = (totalSizeBytes / (1024 * 1024 * 1024)).toFixed(2);
   const totalStorageMB = (totalSizeBytes / (1024 * 1024)).toFixed(1);
   const storageDisplay = totalSizeBytes >= 1024 * 1024 * 1024 
@@ -550,7 +574,7 @@ export default function Dashboard() {
   
   const collectionsCount = collections.length;
 
-  const unorganizedFiles = recentFiles.filter((f: any) => !f.collectionId && !f.categoryId);
+  const unorganizedFiles = activeFiles.filter((f: any) => !f.collectionId && !f.categoryId);
 
   const basicFields = ['preferredName', 'dob', 'gender', 'bloodGroup', 'nationality', 'religion', 'phone', 'altPhone', 'currentAddress', 'permanentAddress'];
   const academicFields = ['studentId', 'university', 'course', 'branch', 'yearSem', 'section', 'admissionYear', 'graduationYear'];
@@ -570,7 +594,7 @@ export default function Dashboard() {
 
   const getCategoryCounts = () => {
     const counts = { Identity: 0, Education: 0, Career: 0, Projects: 0, Personal: 0, Other: 0 };
-    recentFiles.forEach(file => {
+    activeFiles.forEach(file => {
       if (file.categoryId && Object.keys(counts).includes(file.categoryId)) {
         counts[file.categoryId as keyof typeof counts]++;
         return;
@@ -750,7 +774,7 @@ export default function Dashboard() {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {collections.slice(0, 4).map((col, i) => {
-                      const itemCount = recentFiles.filter((f: any) => f.collectionId === col.id).length;
+                      const itemCount = activeFiles.filter((f: any) => f.collectionId === col.id).length;
                       return (
                         <div key={i} onClick={() => setActiveTab('Collection:' + col.id)} className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center">
                           <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -924,7 +948,7 @@ export default function Dashboard() {
                   </h2>
                   {activeTab.startsWith('Category:') && (
                      <p className="text-sm text-slate-500">
-                       {getCategoryFiles(recentFiles, activeTab.split(':')[1]).length} items
+                       {getCategoryFiles(activeFiles, activeTab.split(':')[1]).length} items
                      </p>
                   )}
                 </div>
@@ -941,13 +965,13 @@ export default function Dashboard() {
             
              <FilterControls />
             
-            {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(recentFiles, activeTab.split(':')[1]) : unorganizedFiles).length === 0 ? (
+            {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(activeFiles, activeTab.split(':')[1]) : unorganizedFiles).length === 0 ? (
                <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-12">
                  <EmptyState />
                </div>
             ) : defaultFolderView === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(recentFiles, activeTab.split(':')[1]) : unorganizedFiles).map((file, i) => (
+                {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(activeFiles, activeTab.split(':')[1]) : unorganizedFiles).map((file, i) => (
                   <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-blue-100 transition-all group cursor-pointer flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
                     <div className="w-full h-28 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-blue-400 group-hover:bg-blue-50/50 group-hover:scale-105 transition-all duration-300">
                       <FileText size={36} className="opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -970,7 +994,7 @@ export default function Dashboard() {
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
-                  {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(recentFiles, activeTab.split(':')[1]) : unorganizedFiles).map((file, i) => (
+                  {getFilteredAndSortedFiles(activeTab.startsWith('Category:') ? getCategoryFiles(activeFiles, activeTab.split(':')[1]) : unorganizedFiles).map((file, i) => (
                     <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-blue-500 bg-blue-50">
@@ -1051,7 +1075,7 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {collections.map((col, i) => {
-                  const itemCount = recentFiles.filter((f: any) => f.collectionId === col.id).length;
+                  const itemCount = activeFiles.filter((f: any) => f.collectionId === col.id).length;
                   return (
                     <div key={i} onClick={() => setActiveTab('Collection:' + col.id)} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center">
                       <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -1115,7 +1139,7 @@ export default function Dashboard() {
             {(() => {
                const collectionId = activeTab.split(':')[1];
                const col = collections.find(c => c.id === collectionId);
-               const collectionFiles = recentFiles.filter((f: any) => f.collectionId === collectionId);
+               const collectionFiles = activeFiles.filter((f: any) => f.collectionId === collectionId);
                return (
                  <>
                    <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -1196,7 +1220,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-            {getFilteredAndSortedFiles(recentFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
+            {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-500">
                 <Heart size={48} className="text-slate-200 mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 mb-2">No favorites yet</h3>
@@ -1204,7 +1228,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {getFilteredAndSortedFiles(recentFiles.filter((f: any) => f.isFavorite)).map((file: any, i: number) => (
+                {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).map((file: any, i: number) => (
                   <div key={i} onClick={() => setViewFile(file)} className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col">
                     <div className="flex items-start justify-between mb-3">
                       <div className={`p-3 rounded-xl ${
@@ -1416,7 +1440,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-            {recentFiles.length === 0 ? (
+            {activeFiles.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-500">
                 <Clock size={48} className="text-slate-200 mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 mb-2">No recent files</h3>
@@ -1424,7 +1448,7 @@ export default function Dashboard() {
               </div>
             ) : defaultFolderView === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {[...recentFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file, i) => (
+                {[...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file, i) => (
                   <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-blue-100 transition-all group cursor-pointer flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
                     <div className="w-full h-28 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-blue-400 group-hover:bg-blue-50/50 group-hover:scale-105 transition-all duration-300">
                       <FileText size={36} className="opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -1447,7 +1471,7 @@ export default function Dashboard() {
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
-                  {[...recentFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file: any, i: number) => (
+                  {[...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file: any, i: number) => (
                     <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-blue-500 bg-blue-50">
@@ -1481,12 +1505,47 @@ export default function Dashboard() {
               {activeTab === 'Collections' && <Folder size={32} />}
               {activeTab === 'Favorites' && <Heart size={32} />}
               {activeTab === 'Recent' && <Clock size={32} />}
-              {activeTab === 'Trash' && <Trash2 size={32} />}
               {activeTab === 'Settings' && <Settings size={32} />}
               {activeTab === 'Search' && <Search size={32} />}
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">{activeTab}</h2>
             <p className="text-slate-500 max-w-md mx-auto">This section is currently under construction. Check back soon for updates to your digital locker.</p>
+          </div>
+        ) : activeTab === 'Trash' ? (
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
+            <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Trash</h2>
+               <button onClick={emptyTrash} disabled={isEmptyingTrash || trashFiles.length === 0} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
+                 {isEmptyingTrash ? <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <Trash2 size={18} />} 
+                 {isEmptyingTrash ? 'Emptying...' : 'Clear Trash'}
+               </button>
+            </div>
+            
+            {trashFiles.length === 0 ? (
+               <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-16 flex flex-col items-center text-center">
+                 <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4"><Trash2 size={40}/></div>
+                 <h3 className="text-lg font-bold text-slate-800 mb-1">Trash is empty</h3>
+                 <p className="text-slate-500 font-medium mb-6">No files have been deleted.</p>
+               </div>
+            ) : (
+              <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+                <div className="divide-y divide-slate-100">
+                  {trashFiles.map((file, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-slate-50 opacity-75">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-red-500 bg-red-100">
+                          <FileText size={18}/>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm text-slate-800 line-through">{file.name}</h4>
+                          <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -1572,14 +1631,14 @@ export default function Dashboard() {
                 <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
                   <CheckCircle2 size={40} className="animate-tick-pop" />
                 </div>
-                <h3 className="font-bold text-xl text-slate-900 mb-2">Successfully Deleted</h3>
-                <p className="text-slate-500 text-sm">The file has been removed.</p>
+                <h3 className="font-bold text-xl text-slate-900 mb-2">Moved to Trash</h3>
+                <p className="text-slate-500 text-sm">The file has been moved.</p>
               </div>
             ) : isDeletingFile ? (
               <div className="p-12 flex flex-col items-center justify-center animate-in fade-in duration-300">
                 <div className="w-16 h-16 border-4 border-slate-100 border-t-red-500 rounded-full animate-spin mb-6"></div>
-                <h3 className="font-bold text-lg text-slate-900 mb-2">Deleting File...</h3>
-                <p className="text-slate-500 text-sm">Removing file securely.</p>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Moving to Trash...</h3>
+                <p className="text-slate-500 text-sm">Moving file securely.</p>
               </div>
             ) : (
               <>
@@ -1587,15 +1646,15 @@ export default function Dashboard() {
                   <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Trash2 size={32} />
                   </div>
-                  <h3 className="font-bold text-xl text-slate-900 mb-2">Delete File?</h3>
+                  <h3 className="font-bold text-xl text-slate-900 mb-2">Move to Trash?</h3>
                   <p className="text-slate-500 text-sm">
-                    Are you sure you want to permanently delete <strong className="text-slate-700">{deleteConfirmFile.name}</strong>? This action cannot be undone and will remove it from both your locker and the storage.
+                    Are you sure you want to move <strong className="text-slate-700">{deleteConfirmFile.name}</strong> to the trash? You can permanently delete it later from the Trash tab.
                   </p>
                 </div>
                 <div className="flex border-t border-slate-100">
                   <button onClick={() => setDeleteConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
                   <div className="w-[1px] bg-slate-100"></div>
-                  <button onClick={confirmDeleteFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+                  <button onClick={confirmDeleteFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Move to Trash</button>
                 </div>
               </>
             )}
