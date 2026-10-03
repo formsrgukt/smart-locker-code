@@ -1071,17 +1071,14 @@ export default function Dashboard() {
               </div>
             )}
             
-            {activeTab.startsWith('Category:') && (
-              <button onClick={() => setActiveTab('Categories')} className="mb-4 group flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors w-max">
-                <div className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 rounded-full group-hover:bg-slate-100 group-hover:-translate-x-1 transition-all shadow-sm">
-                  <ChevronLeft size={20}/>
-                </div>
-                <span className="font-semibold text-sm">Back</span>
-              </button>
-            )}
-            
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-center gap-4">
+                {activeTab.startsWith('Category:') && (
+                  <button type="button" onClick={() => setActiveTab('Categories')} className="back-pill" aria-label="Back">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                    <span>Back</span>
+                  </button>
+                )}
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
                     {activeTab.startsWith('Category:') ? activeTab.split(':')[1] + ' Documents' : 'All Documents'}
@@ -1343,15 +1340,12 @@ export default function Dashboard() {
                const collectionFiles = activeFiles.filter((f: any) => f.collectionId === collectionId);
                return (
                  <>
-                   <button onClick={() => setActiveTab('Collections')} className="mb-4 group flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors w-max">
-                     <div className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 rounded-full group-hover:bg-slate-100 group-hover:-translate-x-1 transition-all shadow-sm">
-                       <ChevronLeft size={20}/>
-                     </div>
-                     <span className="font-semibold text-sm">Back</span>
-                   </button>
-                   
                    <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                      <div className="flex items-center gap-4">
+                       <button type="button" onClick={() => setActiveTab('Collections')} className="back-pill" aria-label="Back">
+                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                         <span>Back</span>
+                       </button>
                        <div>
                          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">{col?.name || 'Collection'}</h2>
                          <p className="text-sm text-slate-500">{collectionFiles.length} items</p>
