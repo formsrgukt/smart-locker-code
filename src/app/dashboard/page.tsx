@@ -63,6 +63,8 @@ export default function Dashboard() {
   const [isConfirmEmptyTrashOpen, setIsConfirmEmptyTrashOpen] = useState(false);
   const [isRestoringFile, setIsRestoringFile] = useState(false);
   const [restoreFileSuccess, setRestoreFileSuccess] = useState(false);
+  const [isPermanentlyDeletingFile, setIsPermanentlyDeletingFile] = useState(false);
+  const [permanentDeleteFileSuccess, setPermanentDeleteFileSuccess] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
@@ -421,6 +423,7 @@ export default function Dashboard() {
 
   const confirmPermanentlyDeleteSingleFile = async () => {
     if (!permanentDeleteConfirmFile) return;
+    setIsPermanentlyDeletingFile(true);
     try {
       const file = permanentDeleteConfirmFile;
       fetch('/api/delete', {
@@ -431,11 +434,18 @@ export default function Dashboard() {
       
       await deleteDoc(doc(db, "files", file.id));
       setRecentFiles(prev => prev.filter(f => f.id !== file.id));
-      showToast("Deleted", "File permanently deleted.");
+      
+      setIsPermanentlyDeletingFile(false);
+      setPermanentDeleteFileSuccess(true);
+      setTimeout(() => {
+        setPermanentDeleteFileSuccess(false);
+        setPermanentDeleteConfirmFile(null);
+        showToast("Deleted", "File permanently deleted.");
+      }, 1500);
     } catch (error) {
-      showToast("Error", "Could not delete file", "error");
-    } finally {
+      setIsPermanentlyDeletingFile(false);
       setPermanentDeleteConfirmFile(null);
+      showToast("Error", "Could not delete file", "error");
     }
   };
 
@@ -1959,22 +1969,40 @@ export default function Dashboard() {
 
       {/* PERMANENT DELETE SINGLE FILE MODAL */}
       {permanentDeleteConfirmFile && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setPermanentDeleteConfirmFile(null)}>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => { if (!isPermanentlyDeletingFile && !permanentDeleteFileSuccess) setPermanentDeleteConfirmFile(null); }}>
           <div className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-center" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
-              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 size={32} />
+            {permanentDeleteFileSuccess ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle2 size={40} className="animate-tick-pop" />
+                </div>
+                <h3 className="font-bold text-xl text-slate-900 mb-2">Successfully Deleted</h3>
+                <p className="text-slate-500 text-sm">The file has been permanently removed.</p>
               </div>
-              <h3 className="font-bold text-xl text-slate-900 mb-2">Permanently Delete?</h3>
-              <p className="text-slate-500 text-sm">
-                Are you sure you want to permanently delete <strong className="text-slate-700">{permanentDeleteConfirmFile.name}</strong>? This cannot be undone.
-              </p>
-            </div>
-            <div className="flex border-t border-slate-100">
-              <button onClick={() => setPermanentDeleteConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-              <div className="w-[1px] bg-slate-100"></div>
-              <button onClick={confirmPermanentlyDeleteSingleFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
-            </div>
+            ) : isPermanentlyDeletingFile ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="w-16 h-16 border-4 border-slate-100 border-t-red-500 rounded-full animate-spin mb-6"></div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Deleting File...</h3>
+                <p className="text-slate-500 text-sm">Removing file securely.</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-8">
+                  <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Trash2 size={32} />
+                  </div>
+                  <h3 className="font-bold text-xl text-slate-900 mb-2">Permanently Delete?</h3>
+                  <p className="text-slate-500 text-sm">
+                    Are you sure you want to permanently delete <strong className="text-slate-700">{permanentDeleteConfirmFile.name}</strong>? This cannot be undone.
+                  </p>
+                </div>
+                <div className="flex border-t border-slate-100">
+                  <button onClick={() => setPermanentDeleteConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                  <div className="w-[1px] bg-slate-100"></div>
+                  <button onClick={confirmPermanentlyDeleteSingleFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
