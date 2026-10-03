@@ -1094,11 +1094,11 @@ export default function Dashboard() {
                   
                   <button 
                     onClick={toggleTwoStep}
-                    className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${twoStepEnabled ? 'bg-blue-600' : 'bg-slate-300'}`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${twoStepEnabled ? 'bg-blue-600' : 'bg-slate-200'}`}
                   >
                     <span className="sr-only">Toggle 2-Step Verification</span>
                     <span
-                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${twoStepEnabled ? 'translate-x-7' : 'translate-x-0'}`}
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${twoStepEnabled ? 'translate-x-5' : 'translate-x-0'}`}
                     />
                   </button>
                 </div>
