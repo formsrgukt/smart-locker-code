@@ -1079,6 +1079,9 @@ export default function Dashboard() {
                     <span>Back</span>
                   </button>
                 )}
+                <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center shrink-0">
+                  <FolderOpen size={20} />
+                </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
                     {activeTab.startsWith('Category:') ? activeTab.split(':')[1] + ' Documents' : 'All Documents'}
@@ -1091,9 +1094,6 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center">
-                  <FolderOpen size={20} />
-                </div>
                 <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
                   <Plus size={18} /> Upload New
                 </button>
@@ -1162,9 +1162,11 @@ export default function Dashboard() {
         ) : activeTab === 'Categories' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
-               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 uppercase tracking-wider">Your documents</h2>
-               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
-                 <LayoutGrid size={20} />
+               <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                   <LayoutGrid size={20} />
+                 </div>
+                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 uppercase tracking-wider">Your documents</h2>
                </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1193,15 +1195,15 @@ export default function Dashboard() {
         ) : activeTab === 'Collections' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
-               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Collections</h2>
-               <div className="flex items-center gap-3">
-                 <div className="hidden sm:flex w-10 h-10 rounded-xl bg-blue-50 text-blue-500 items-center justify-center">
+               <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
                    <Library size={20} />
                  </div>
-                 <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                   <Plus size={18} /> New Collection
-                 </button>
+                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Collections</h2>
                </div>
+               <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                 <Plus size={18} /> New Collection
+               </button>
             </div>
             
             {activeCollections.length === 0 ? (
@@ -1413,8 +1415,8 @@ export default function Dashboard() {
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
             <div className="flex items-center justify-between mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600 shrink-0">
-                  <Heart size={24} className="fill-red-500" />
+                <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 shrink-0">
+                  <Heart size={20} className="fill-red-500" />
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Favorites</h2>
@@ -1742,11 +1744,16 @@ export default function Dashboard() {
         ) : activeTab === 'Trash' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
-               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Trash</h2>
-               <button onClick={() => setIsConfirmEmptyTrashOpen(true)} disabled={isEmptyingTrash || trashFiles.length === 0} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
-                 {isEmptyingTrash ? <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <Trash2 size={18} />} 
-                 {isEmptyingTrash ? 'Emptying...' : 'Clear Trash'}
-               </button>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 shrink-0">
+                    <Trash2 size={20} />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Trash</h2>
+                </div>
+                <button onClick={() => setIsConfirmEmptyTrashOpen(true)} disabled={isEmptyingTrash || trashFiles.length === 0} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
+                  {isEmptyingTrash ? <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <Trash2 size={18} />} 
+                  {isEmptyingTrash ? 'Emptying...' : 'Clear Trash'}
+                </button>
             </div>
             
             {(trashFiles.length === 0 && trashCollections.length === 0) ? (
