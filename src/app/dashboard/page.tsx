@@ -1692,16 +1692,21 @@ export default function Dashboard() {
                 <p className="text-sm text-slate-500">Your most recently uploaded or accessed files.</p>
               </div>
             </div>
+            {renderFilterControls()}
             
-            {activeFiles.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-500">
-                <Clock size={48} className="text-slate-200 mb-4" />
-                <h3 className="text-xl font-bold text-slate-900 mb-2">No recent files</h3>
-                <p className="text-slate-500">Upload some documents to see them here.</p>
+            {getFilteredAndSortedFiles([...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20)).length === 0 ? (
+              <div className="mt-8 bg-white rounded-[32px] border border-slate-100 shadow-sm py-4">
+                 {searchQuery || filterType !== 'all' ? <NoDocumentsFound /> : (
+                  <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-500">
+                    <Clock size={48} className="text-slate-200 mb-4" />
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">No recent files</h3>
+                    <p className="text-slate-500">Upload some documents to see them here.</p>
+                  </div>
+                 )}
               </div>
             ) : defaultFolderView === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {[...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file, i) => (
+                {getFilteredAndSortedFiles([...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20)).map((file, i) => (
                   <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-blue-100 transition-all group cursor-pointer flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
                     <div className="w-full h-28 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-blue-400 group-hover:bg-blue-50/50 group-hover:scale-105 transition-all duration-300">
                       <FileText size={36} className="opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -1724,7 +1729,7 @@ export default function Dashboard() {
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
-                  {[...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file: any, i: number) => (
+                  {getFilteredAndSortedFiles([...activeFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20)).map((file: any, i: number) => (
                     <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-blue-500 bg-blue-50">
