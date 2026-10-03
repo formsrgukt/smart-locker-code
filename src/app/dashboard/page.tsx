@@ -508,6 +508,7 @@ export default function Dashboard() {
     // We intentionally delay the UI to show the 'Creating...' animation
     setTimeout(() => {
       const tempId = "temp-" + Date.now();
+      let finalId = tempId;
       
       // 1. Optimistically update UI
       setCollections(prev => [...prev, { id: tempId, name, count: 0 }]);
@@ -519,7 +520,7 @@ export default function Dashboard() {
         setCreateCollectionSuccess(false);
         setIsCreateCollectionOpen(false);
         setNewCollectionName('');
-        setActiveTab('Collection:' + tempId);
+        setActiveTab('Collection:' + finalId);
       }, 800);
       
       // 2. Perform network request in background
@@ -530,6 +531,7 @@ export default function Dashboard() {
         count: 0,
         createdAt: new Date().toISOString()
       }).then(docRef => {
+        finalId = docRef.id;
         // Update temp ID with real ID from database
         setCollections(prev => prev.map(c => c.id === tempId ? { ...c, id: docRef.id } : c));
         setActiveTab(current => current === 'Collection:' + tempId ? 'Collection:' + docRef.id : current);
