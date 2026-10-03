@@ -481,6 +481,7 @@ export default function Dashboard() {
 
       try {
           const currentCollectionId = activeTab.startsWith('Collection:') ? activeTab.split(':')[1] : null;
+          const currentCategoryId = activeTab.startsWith('Category:') ? activeTab.split(':')[1] : null;
           // Store metadata in Firebase
           await addDoc(collection(db, "files"), {
             name: file.name,
@@ -491,6 +492,7 @@ export default function Dashboard() {
             github_url: data.github_url || null,
             userId: user?.uid,
             collectionId: currentCollectionId,
+            categoryId: currentCategoryId,
             createdAt: new Date().toISOString(),
           });
           
@@ -545,7 +547,7 @@ export default function Dashboard() {
   
   const collectionsCount = collections.length;
 
-  const unorganizedFiles = recentFiles.filter((f: any) => !f.collectionId);
+  const unorganizedFiles = recentFiles.filter((f: any) => !f.collectionId && !f.categoryId);
 
   const basicFields = ['preferredName', 'dob', 'gender', 'bloodGroup', 'nationality', 'religion', 'phone', 'altPhone', 'currentAddress', 'permanentAddress'];
   const academicFields = ['studentId', 'university', 'course', 'branch', 'yearSem', 'section', 'admissionYear', 'graduationYear'];
@@ -566,6 +568,10 @@ export default function Dashboard() {
   const getCategoryCounts = () => {
     const counts = { Identity: 0, Education: 0, Career: 0, Projects: 0, Personal: 0, Other: 0 };
     recentFiles.forEach(file => {
+      if (file.categoryId && Object.keys(counts).includes(file.categoryId)) {
+        counts[file.categoryId as keyof typeof counts]++;
+        return;
+      }
       const name = file.name?.toLowerCase() || '';
       if (name.match(/id|passport|aadhaar|pan|license|driving|card/)) counts.Identity++;
       else if (name.match(/certificate|degree|mark|transcript|school|university|college|diploma/)) counts.Education++;
@@ -580,6 +586,8 @@ export default function Dashboard() {
 
   const getCategoryFiles = (files: any[], catName: string) => {
     return files.filter(f => {
+      if (f.categoryId === catName) return true;
+      if (f.categoryId && f.categoryId !== catName) return false;
       const name = f.name?.toLowerCase() || '';
       if (catName === 'Identity') return name.match(/id|passport|aadhaar|pan|license|driving|card/);
       if (catName === 'Education') return name.match(/certificate|degree|mark|transcript|school|university|college|diploma/);
