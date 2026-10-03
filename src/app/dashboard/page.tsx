@@ -994,6 +994,9 @@ export default function Dashboard() {
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 uppercase tracking-wider">Your documents</h2>
+               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                 <LayoutGrid size={20} />
+               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
