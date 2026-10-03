@@ -50,6 +50,8 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState('newest');
   const [isDeletingCollection, setIsDeletingCollection] = useState(false);
   const [deleteCollectionSuccess, setDeleteCollectionSuccess] = useState(false);
+  const [isDeletingFile, setIsDeletingFile] = useState(false);
+  const [deleteFileSuccess, setDeleteFileSuccess] = useState(false);
   const [isCreateCollectionOpen, setIsCreateCollectionOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [collections, setCollections] = useState<{id?: string, name: string, count: number}[]>([]);
@@ -335,7 +337,7 @@ export default function Dashboard() {
   const confirmDeleteFile = async () => {
     if (!deleteConfirmFile) return;
     const file = deleteConfirmFile;
-    setDeleteConfirmFile(null);
+    setIsDeletingFile(true);
     try {
       const res = await fetch('/api/delete', {
         method: 'POST',
@@ -348,9 +350,17 @@ export default function Dashboard() {
       }
       await deleteDoc(doc(db, "files", file.id));
       setRecentFiles(prev => prev.filter(f => f.id !== file.id));
-      showToast("File deleted", "The file was successfully removed from your locker.");
+      
+      setIsDeletingFile(false);
+      setDeleteFileSuccess(true);
+      setTimeout(() => {
+        setDeleteFileSuccess(false);
+        setDeleteConfirmFile(null);
+      }, 2000);
     } catch (error) {
       console.error('Delete error:', error);
+      setIsDeletingFile(false);
+      setDeleteConfirmFile(null);
       showToast("Failed to delete", "An error occurred while deleting the file.", "error");
     }
   };
@@ -1527,22 +1537,40 @@ export default function Dashboard() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmFile && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setDeleteConfirmFile(null)}>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => { if (!isDeletingFile && !deleteFileSuccess) setDeleteConfirmFile(null); }}>
           <div className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-center" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
-              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 size={32} />
+            {deleteFileSuccess ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle2 size={40} className="animate-tick-pop" />
+                </div>
+                <h3 className="font-bold text-xl text-slate-900 mb-2">Successfully Deleted</h3>
+                <p className="text-slate-500 text-sm">The file has been removed.</p>
               </div>
-              <h3 className="font-bold text-xl text-slate-900 mb-2">Delete File?</h3>
-              <p className="text-slate-500 text-sm">
-                Are you sure you want to permanently delete <strong className="text-slate-700">{deleteConfirmFile.name}</strong>? This action cannot be undone and will remove it from both your locker and the storage.
-              </p>
-            </div>
-            <div className="flex border-t border-slate-100">
-              <button onClick={() => setDeleteConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-              <div className="w-[1px] bg-slate-100"></div>
-              <button onClick={confirmDeleteFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
-            </div>
+            ) : isDeletingFile ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="w-16 h-16 border-4 border-slate-100 border-t-red-500 rounded-full animate-spin mb-6"></div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Deleting File...</h3>
+                <p className="text-slate-500 text-sm">Removing file securely.</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-8">
+                  <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Trash2 size={32} />
+                  </div>
+                  <h3 className="font-bold text-xl text-slate-900 mb-2">Delete File?</h3>
+                  <p className="text-slate-500 text-sm">
+                    Are you sure you want to permanently delete <strong className="text-slate-700">{deleteConfirmFile.name}</strong>? This action cannot be undone and will remove it from both your locker and the storage.
+                  </p>
+                </div>
+                <div className="flex border-t border-slate-100">
+                  <button onClick={() => setDeleteConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                  <div className="w-[1px] bg-slate-100"></div>
+                  <button onClick={confirmDeleteFile} className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
