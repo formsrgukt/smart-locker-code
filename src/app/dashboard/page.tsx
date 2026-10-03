@@ -826,7 +826,7 @@ export default function Dashboard() {
                   </li>
                 </ul>
 
-                <button onClick={() => setActiveTab('Personal Info')} className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-medium rounded-xl border border-slate-200 transition-colors active:scale-95">
+                <button onClick={() => setActiveTab('Personal Info')} className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-medium rounded-xl border border-slate-200 transition-colors">
                   {profileCompletionPercentage === 100 ? "View Profile" : "Complete Profile"}
                 </button>
               </div>
