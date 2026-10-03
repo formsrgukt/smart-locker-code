@@ -508,7 +508,10 @@ export default function Dashboard() {
         showToast("Upload Successful", "File uploaded to GitHub and saved to Firebase.");
         
         setIsUploadSuccess(true);
-        setTimeout(() => setIsUploadSuccess(false), 3000);
+        setTimeout(() => {
+          setIsUploadSuccess(false);
+          setIsUploadModalOpen(false);
+        }, 2000);
     } catch (error) {
       showToast("Upload failed", String(error), "error");
     } finally {
