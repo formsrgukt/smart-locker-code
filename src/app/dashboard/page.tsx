@@ -61,6 +61,8 @@ export default function Dashboard() {
   const [restoreConfirmFile, setRestoreConfirmFile] = useState<any | null>(null);
   const [permanentDeleteConfirmFile, setPermanentDeleteConfirmFile] = useState<any | null>(null);
   const [isConfirmEmptyTrashOpen, setIsConfirmEmptyTrashOpen] = useState(false);
+  const [isRestoringFile, setIsRestoringFile] = useState(false);
+  const [restoreFileSuccess, setRestoreFileSuccess] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
@@ -389,16 +391,33 @@ export default function Dashboard() {
 
   const confirmRestoreFile = async () => {
     if (!restoreConfirmFile) return;
+    setIsRestoringFile(true);
     try {
       const file = restoreConfirmFile;
       await updateDoc(doc(db, "files", file.id), { status: 'active' });
       setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, status: 'active' } : f));
-      showToast("Restored", "File has been restored successfully.");
+      
+      setIsRestoringFile(false);
+      setRestoreFileSuccess(true);
+      setTimeout(() => {
+        setRestoreFileSuccess(false);
+        setRestoreConfirmFile(null);
+        showToast("Restored", "File has been restored successfully.");
+      }, 1500);
     } catch (error) {
-      showToast("Error", "Could not restore file", "error");
-    } finally {
+      setIsRestoringFile(false);
       setRestoreConfirmFile(null);
+      showToast("Error", "Could not restore file", "error");
     }
+  };
+
+  const getRestoredFolderName = (file: any) => {
+    if (file.categoryId) return `Category: ${file.categoryId}`;
+    if (file.collectionId) {
+      const col = collections.find(c => c.id === file.collectionId);
+      if (col) return col.name;
+    }
+    return "All Documents";
   };
 
   const confirmPermanentlyDeleteSingleFile = async () => {
@@ -1901,22 +1920,40 @@ export default function Dashboard() {
 
       {/* RESTORE CONFIRMATION MODAL */}
       {restoreConfirmFile && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setRestoreConfirmFile(null)}>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => { if (!isRestoringFile && !restoreFileSuccess) setRestoreConfirmFile(null); }}>
           <div className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-center" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileBadge size={32} />
+            {restoreFileSuccess ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle2 size={40} className="animate-tick-pop" />
+                </div>
+                <h3 className="font-bold text-xl text-slate-900 mb-2">Successfully Restored</h3>
+                <p className="text-slate-500 text-sm">Restored to <strong className="text-slate-700">{getRestoredFolderName(restoreConfirmFile)}</strong>.</p>
               </div>
-              <h3 className="font-bold text-xl text-slate-900 mb-2">Restore File?</h3>
-              <p className="text-slate-500 text-sm">
-                Are you sure you want to restore <strong className="text-slate-700">{restoreConfirmFile.name}</strong> from the trash?
-              </p>
-            </div>
-            <div className="flex border-t border-slate-100">
-              <button onClick={() => setRestoreConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-              <div className="w-[1px] bg-slate-100"></div>
-              <button onClick={confirmRestoreFile} className="flex-1 py-4 font-bold text-emerald-600 hover:bg-emerald-50 transition-colors">Restore</button>
-            </div>
+            ) : isRestoringFile ? (
+              <div className="p-12 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="w-16 h-16 border-4 border-slate-100 border-t-emerald-500 rounded-full animate-spin mb-6"></div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">Restoring File...</h3>
+                <p className="text-slate-500 text-sm">Moving file back securely.</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-8">
+                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileBadge size={32} />
+                  </div>
+                  <h3 className="font-bold text-xl text-slate-900 mb-2">Restore File?</h3>
+                  <p className="text-slate-500 text-sm">
+                    Are you sure you want to restore <strong className="text-slate-700">{restoreConfirmFile.name}</strong> from the trash?
+                  </p>
+                </div>
+                <div className="flex border-t border-slate-100">
+                  <button onClick={() => setRestoreConfirmFile(null)} className="flex-1 py-4 font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                  <div className="w-[1px] bg-slate-100"></div>
+                  <button onClick={confirmRestoreFile} className="flex-1 py-4 font-bold text-emerald-600 hover:bg-emerald-50 transition-colors">Restore</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
