@@ -339,15 +339,14 @@ export default function Dashboard() {
     const file = deleteConfirmFile;
     setIsDeletingFile(true);
     try {
-      const res = await fetch('/api/delete', {
+      // Fire and forget GitHub deletion to prevent UI blocking
+      fetch('/api/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: file.url })
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.details || 'API failed to delete from GitHub');
-      }
+      }).catch(err => console.error('Background GitHub delete error:', err));
+
+      // Only await the fast Firebase database deletion
       await deleteDoc(doc(db, "files", file.id));
       setRecentFiles(prev => prev.filter(f => f.id !== file.id));
       
@@ -356,7 +355,7 @@ export default function Dashboard() {
       setTimeout(() => {
         setDeleteFileSuccess(false);
         setDeleteConfirmFile(null);
-      }, 2000);
+      }, 1000);
     } catch (error) {
       console.error('Delete error:', error);
       setIsDeletingFile(false);
