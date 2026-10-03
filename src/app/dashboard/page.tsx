@@ -862,7 +862,7 @@ export default function Dashboard() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Your Collections</h3>
-                  <button onClick={() => setActiveTab('Collections')} className="text-sm text-blue-600 font-medium hover:text-blue-700">View all</button>
+                  <button onClick={() => setActiveTab('Collections')} className="text-sm text-blue-600 font-medium hover:text-blue-700 hover:bg-blue-50 px-3 py-1 rounded-lg transition-colors">View all</button>
                 </div>
                 {activeCollections.length === 0 ? (
                   <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center">
@@ -891,7 +891,7 @@ export default function Dashboard() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Recently added</h3>
-                  <Link href="#" className="text-sm text-blue-600 font-medium hover:text-blue-700">View all</Link>
+                  <button onClick={() => setActiveTab('Recent')} className="text-sm text-blue-600 font-medium hover:text-blue-700 hover:bg-blue-50 px-3 py-1 rounded-lg transition-colors">View all</button>
                 </div>
                 
                 <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
