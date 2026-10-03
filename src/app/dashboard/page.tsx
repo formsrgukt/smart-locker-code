@@ -1614,11 +1614,48 @@ export default function Dashboard() {
             </div>
             
             {trashFiles.length === 0 ? (
-               <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-16 flex flex-col items-center text-center">
-                 <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-4"><Trash2 size={40}/></div>
-                 <h3 className="text-lg font-bold text-slate-800 mb-1">Trash is empty</h3>
-                 <p className="text-slate-500 font-medium mb-6">No files have been deleted.</p>
-               </div>
+                <div className="mt-8 bg-transparent py-16 flex flex-col items-center text-center">
+                  <div className="trash-empty-stage" aria-hidden="true">
+                    <div className="trash-ring"></div>
+
+                    {/* file card with its own delete button */}
+                    <div className="trash-card">
+                      <b className="trash-tag">DOC</b>
+                      <i className="trash-ln"></i><i className="trash-ln"></i><i className="trash-ln s"></i>
+                      <span className="trash-name">Notes.docx</span>
+                      <span className="trash-btn-anim">
+                        <i className="trash-bp" style={{ '--x': '-16px', '--y': '-14px' } as any}></i>
+                        <i className="trash-bp" style={{ '--x': '15px', '--y': '-16px' } as any}></i>
+                        <i className="trash-bp" style={{ '--x': '-19px', '--y': '4px' } as any}></i>
+                        <i className="trash-bp" style={{ '--x': '18px', '--y': '6px' } as any}></i>
+                        <i className="trash-bp" style={{ '--x': '0px', '--y': '-22px' } as any}></i>
+                        <i className="trash-bp" style={{ '--x': '-4px', '--y': '18px' } as any}></i>
+                        <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                      </span>
+                    </div>
+
+                    {/* trash bin */}
+                    <div className="trash-bin">
+                      <svg viewBox="0 0 24 24">
+                        <g className="trash-lid"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></g>
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                      </svg>
+                    </div>
+
+                    <i className="trash-sp" style={{ '--x': '-62px', '--y': '-30px' } as any}></i>
+                    <i className="trash-sp" style={{ '--x': '60px', '--y': '-36px' } as any}></i>
+                    <i className="trash-sp" style={{ '--x': '-76px', '--y': '8px' } as any}></i>
+                    <i className="trash-sp" style={{ '--x': '74px', '--y': '10px' } as any}></i>
+                    <i className="trash-sp" style={{ '--x': '-34px', '--y': '-58px' } as any}></i>
+                    <i className="trash-sp" style={{ '--x': '36px', '--y': '-56px' } as any}></i>
+
+                    {/* cursor */}
+                    <div className="trash-cursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 9.500-6.500 1.500 3.500 7-3 1.500-3.500-7L4 19.500z" fill="#0f172a" stroke="#fff" strokeWidth="1.600" strokeLinejoin="round"/></svg></div>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-2 mt-4">Trash is empty</h3>
+                  <p className="text-slate-500 font-medium max-w-md">No files have been deleted.</p>
+                </div>
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">

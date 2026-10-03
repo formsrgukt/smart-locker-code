@@ -205,3 +205,98 @@ button {
   46%      { opacity: 1; translate: 40px 142px; }
   52%, 100%{ opacity: 0; translate: 52px 156px; }
 }
+
+/* Trash Empty State Animation */
+:root {
+  --trash-T: 5.6s;
+}
+
+.trash-empty-stage { position: relative; width: 280px; height: 240px; margin: 0 auto; }
+.trash-empty-stage > * { position: absolute; }
+
+/* trash bin (the destination) */
+.trash-bin {
+  left: 50%; top: 130px; width: 100px; height: 100px; margin-left: -50px; border-radius: 50%; z-index: 3;
+  display: grid; place-items: center; background: #f4f7fb;
+  animation: trashSquash var(--trash-T) infinite, trashDisc var(--trash-T) linear infinite;
+}
+@keyframes trashSquash {
+  0%, 60% { transform: scale(1); }
+  61%     { transform: scale(1.12, .88); }
+  63%     { transform: scale(.95, 1.07); }
+  65%     { transform: scale(1.03, .98); }
+  67%, 100% { transform: scale(1); }
+}
+@keyframes trashDisc {
+  0%, 60% { background-color: #f4f7fb; }
+  63%, 82% { background-color: #fee2e2; }
+  91%, 100% { background-color: #f4f7fb; }
+}
+.trash-bin svg {
+  width: 48px; height: 48px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  color: #cbd5e1; animation: trashBinColor var(--trash-T) linear infinite;
+}
+@keyframes trashBinColor { 0%, 60% { color: #cbd5e1; } 63%, 82% { color: #ef4444; } 91%, 100% { color: #cbd5e1; } }
+.trash-lid { transform-origin: 3px 6px; animation: trashLid var(--trash-T) infinite; }
+@keyframes trashLid {
+  0%, 47%  { transform: rotate(0deg); }
+  53%      { transform: rotate(-32deg); animation-timing-function: ease-in; }
+  59%      { transform: rotate(-32deg); }
+  61.5%    { transform: rotate(7deg); }
+  63.5%    { transform: rotate(-5deg); }
+  65.5%, 100% { transform: rotate(0deg); }
+}
+
+.trash-ring { left: 50%; top: 130px; width: 100px; height: 100px; margin-left: -50px; border-radius: 50%; border: 3px solid #fca5a5; opacity: 0; animation: trashRing var(--trash-T) ease-out infinite; }
+@keyframes trashRing { 0%, 60% { opacity: 0; scale: .7; } 62% { opacity: .75; scale: .85; } 76%, 100% { opacity: 0; scale: 2; } }
+
+.trash-sp { left: 50%; top: 180px; width: 7px; height: 7px; margin: -3px 0 0 -3px; border-radius: 50%; background: #f87171; opacity: 0; z-index: 4; animation: trashSpark var(--trash-T) ease-out infinite; }
+.trash-sp:nth-of-type(even) { background: #94a3b8; width: 6px; height: 6px; }
+@keyframes trashSpark { 0%, 61% { opacity: 0; translate: 0 0; scale: .3; } 63% { opacity: 1; } 77%, 100% { opacity: 0; translate: var(--x) var(--y); scale: 1; } }
+
+/* file card */
+.trash-card {
+  left: 50%; top: 6px; width: 96px; height: 100px; margin-left: -48px; padding: 10px; border-radius: 14px; z-index: 2;
+  background: #fff; border: 1px solid #e6ebf5; box-shadow: 0 14px 26px -12px rgba(30,41,90,.35);
+  display: grid; align-content: start; gap: 7px; opacity: 0; animation: trashCard var(--trash-T) linear infinite;
+}
+@keyframes trashCard {
+  0%       { opacity: 0; transform: translateY(-16px) scale(.92); animation-timing-function: cubic-bezier(.16,1,.3,1); }
+  12.5%    { opacity: 1; transform: none; }
+  46%      { opacity: 1; transform: none; animation-timing-function: cubic-bezier(.5,0,.9,.4); }
+  56%      { opacity: 1; transform: translateY(80px) scale(.45); animation-timing-function: linear; }
+  59%      { opacity: 0; transform: translateY(96px) scale(.3); }
+  100%     { opacity: 0; transform: translateY(96px) scale(.3); }
+}
+.trash-card .trash-tag { justify-self: start; font-size: 9px; font-weight: 700; letter-spacing: .05em; color: #fff; background: #3b82f6; padding: 2px 6px; border-radius: 5px; }
+.trash-card .trash-ln { display: block; height: 4px; border-radius: 2px; background: #e3e8f4; }
+.trash-card .trash-ln.s { width: 60%; }
+.trash-card .trash-name { margin-top: 2px; font-size: 10px; font-weight: 600; color: #3b4a68; }
+
+.trash-btn-anim {
+  position: absolute; right: 7px; top: 7px; width: 22px; height: 22px; border-radius: 50%; background: #fff;
+  box-shadow: 0 3px 8px -2px rgba(30,41,90,.35); display: grid; place-items: center; animation: trashBtnAnim var(--trash-T) linear infinite;
+}
+@keyframes trashBtnAnim {
+  0%, 33%  { background-color: #fff; scale: 1; }
+  34%      { background-color: #fee2e2; scale: 1.6; animation-timing-function: ease-out; }
+  39%, 100%{ background-color: #fee2e2; scale: 1; }
+}
+.trash-btn-anim svg { width: 12px; height: 12px; fill: none; stroke: #b4bfd3; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; animation: trashBtnIcon var(--trash-T) linear infinite; }
+@keyframes trashBtnIcon { 0%, 33% { stroke: #b4bfd3; } 34%, 100% { stroke: #ef4444; } }
+.trash-bp { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: #f87171; opacity: 0; animation: trashBurst var(--trash-T) ease-out infinite; }
+.trash-bp:nth-child(even) { background: #94a3b8; }
+@keyframes trashBurst { 0%, 33% { opacity: 0; translate: 0 0; scale: .4; } 35% { opacity: 1; } 45%, 100% { opacity: 0; translate: var(--x) var(--y); scale: 1; } }
+
+/* cursor */
+.trash-cursor { left: 50%; top: 0; width: 22px; height: 22px; opacity: 0; z-index: 5; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(15,23,42,.35)); animation: trashCursor var(--trash-T) linear infinite; }
+.trash-cursor svg { width: 100%; height: 100%; display: block; }
+@keyframes trashCursor {
+  0%, 14%  { opacity: 0; translate: 120px 84px; scale: 1; }
+  18%      { opacity: 1; translate: 110px 74px; animation-timing-function: cubic-bezier(.65,0,.35,1); }
+  32%      { opacity: 1; translate: 26px 22px; scale: 1; }
+  34%      { translate: 26px 22px; scale: .8; }
+  37%      { translate: 26px 22px; scale: 1; }
+  46%      { opacity: 1; translate: 36px 32px; }
+  52%, 100%{ opacity: 0; translate: 52px 46px; }
+}
