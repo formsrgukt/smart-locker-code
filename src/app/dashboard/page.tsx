@@ -828,7 +828,7 @@ export default function Dashboard() {
           </div>
           </div>
         ) : activeTab === 'Documents' ? (
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in zoom-in duration-300">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">All Documents</h2>
                <button onClick={() => setIsUploadModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
@@ -876,7 +876,7 @@ export default function Dashboard() {
         ) : activeTab === 'Personal Info' ? (
           <PersonalInfoView user={user} showToast={showToast} />
         ) : activeTab === 'Collections' ? (
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in zoom-in duration-300">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Collections</h2>
                <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
@@ -908,7 +908,7 @@ export default function Dashboard() {
           </div>
         ) : activeTab.startsWith('Collection:') ? (
           <div 
-            className="relative p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in zoom-in duration-300 min-h-screen"
+            className="relative p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300 min-h-screen"
             onDragEnter={(e) => { 
               e.preventDefault(); 
               e.stopPropagation(); 
@@ -1073,7 +1073,7 @@ export default function Dashboard() {
             )}
           </div>
         ) : activeTab === 'Security' ? (
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in zoom-in duration-300">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-100 shadow-sm mb-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
@@ -1110,7 +1110,7 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300 min-h-[60vh]">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-300 min-h-[60vh]">
             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
               {activeTab === 'Collections' && <Folder size={32} />}
               {activeTab === 'Favorites' && <Heart size={32} />}

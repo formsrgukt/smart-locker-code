@@ -240,7 +240,7 @@ export default function PersonalInfoView({ user, showToast }: PersonalInfoViewPr
   }
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col animate-in fade-in zoom-in duration-300">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col animate-in fade-in duration-300">
       
       {/* 1. PROFILE & HEADER AREA */}
       <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm mb-6 relative">
