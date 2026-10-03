@@ -1,27 +1,133 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-lexend, "Lexend", system-ui, sans-serif);
+  
+  --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
+  --animate-toast-enter: toast-enter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-toast-exit: toast-exit 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  
+  --animate-doc-slide: doc-slide 2s ease-in-out infinite;
+  --animate-fade-lock: fade-lock 2s ease-in-out infinite;
+  --animate-fade-unlock: fade-unlock 2s ease-in-out infinite;
+  --animate-lock-bounce: lock-bounce 2s ease-in-out infinite;
+  --animate-tick-pop: tick-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  --animate-heart-pop: heart-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  --animate-cloud-up: cloud-up 1.8s ease-in-out infinite;
+  
+  @keyframes toast-enter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  @keyframes toast-exit {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes tick-pop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes heart-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes cloud-up {
+    0%   { transform: translateY(6px);  opacity: 0; }
+    35%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { transform: translateY(-6px); opacity: 0; }
+  }
+
+  @keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes doc-slide {
+    0% { transform: translateY(-40px) scale(0.5); opacity: 0; }
+    25% { transform: translateY(-15px) scale(0.9); opacity: 1; }
+    40% { transform: translateY(5px) scale(0.5); opacity: 0; }
+    100% { transform: translateY(5px) scale(0.5); opacity: 0; }
+  }
+
+  @keyframes fade-unlock {
+    0%, 30% { opacity: 1; }
+    40%, 100% { opacity: 0; }
+  }
+  
+  @keyframes fade-lock {
+    0%, 30% { opacity: 0; transform: scale(1.1); }
+    40%, 90% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.1); }
+  }
+
+  @keyframes lock-bounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(4px); }
+    50% { transform: translateY(-4px); }
+    60% { transform: translateY(0); }
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Let Tailwind handle the base typography and background via layout.tsx classes */
+  font-family: var(--font-sans);
 }
 
+/* Hide scrollbar globally but allow scrolling */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.lexend-400 {
+  font-family: "Lexend", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Heart Button Custom CSS */
+:root {
+  --hb-out: cubic-bezier(.16, 1, .3, 1);
+  --hb-idle: #94a3b8; /* slate-400 */
+  --hb-red: #ef4444; /* red-500 */
+  --hb-red-soft: #fef2f2; /* red-50 */
+}
+
+.hb-like {
+  position: relative; width: 32px; height: 32px; padding: 0; border-radius: 8px;
+  display: grid; place-items: center; cursor: pointer;
+  background: transparent; border: none;
+  transition: background-color .7s var(--hb-out), transform .5s var(--hb-out);
+  -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation;
+}
+.hb-like:hover { background-color: var(--hb-red-soft); }
+.hb-like:active { transform: scale(.95); transition-duration: .12s; }
+.hb-like[aria-pressed="true"] { background: var(--hb-red-soft); }
+
+.hb-icon { position: relative; width: 16px; height: 16px; }
+.hb-heart { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 62%; will-change: transform; }
+.hb-fx { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; overflow: visible; pointer-events: none; }
+
+.hb-outline { fill: none; stroke: var(--hb-idle); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .3s; }
+.hb-like:hover .hb-outline { stroke: #f87171; } /* red-400 on hover when not liked */
+.hb-like[aria-pressed="true"] .hb-outline { stroke: var(--hb-red); }
+
+.hb-fill    { fill: var(--hb-red); stroke: var(--hb-red); stroke-width: 1.8; stroke-linejoin: round; }
+.hb-trim    { fill: none; stroke: var(--hb-red); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.06; }
+.hb-shine   { fill: none; stroke: rgba(255,255,255,.8); stroke-width: 1.5; stroke-linecap: round; }

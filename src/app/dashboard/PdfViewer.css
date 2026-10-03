@@ -1,0 +1,25 @@
+.sl-fly{animation:sl-fly 5s ease-in-out infinite;opacity:0}
+.sl-f2{animation-delay:.12s}.sl-f3{animation-delay:.24s}.sl-f4{animation-delay:.36s}
+@keyframes sl-fly{0%{opacity:0;transform:translate(0,0) scale(1)}6%,16%{opacity:1;transform:translate(0,0) scale(1)}34%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(.35)}38%,100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2)}}
+.sl-fx{transform-box:fill-box;transform-origin:center}
+#sl-pp{transform-box:fill-box;transform-origin:center;animation:sl-pp 5s ease-in-out infinite}
+@keyframes sl-pp{0%,34%{transform:scale(1)}38%{transform:scale(1.07)}45%,100%{transform:scale(1)}}
+.sl-ln{transform-box:fill-box;transform-origin:left center;animation:sl-ln 5s ease-out infinite;transform:scaleX(0)}
+.sl-l2{animation-delay:.12s}.sl-l3{animation-delay:.24s}
+@keyframes sl-ln{0%,36%{transform:scaleX(0)}46%,94%{transform:scaleX(1)}99%,100%{transform:scaleX(0)}}
+#sl-bd{transform-box:fill-box;transform-origin:center;animation:sl-bd 5s ease-out infinite;transform:scale(0)}
+@keyframes sl-bd{0%{transform:scale(0) rotate(0)}6%{transform:scale(1.15) rotate(0)}10%,49%{transform:scale(1) rotate(0)}52%{transform:scale(.86) rotate(-7deg)}55%{transform:scale(1.14) rotate(6deg)}58%{transform:scale(.96) rotate(-3deg)}61%{transform:scale(1) rotate(0)}70%{transform:scale(1.07) rotate(0)}78%{transform:scale(1) rotate(0)}86%{transform:scale(1.07) rotate(0)}94%{transform:scale(1) rotate(0)}99%,100%{transform:scale(0) rotate(0)}}
+#sl-shk{transform-box:fill-box;transform-origin:right bottom;animation:sl-shk 5s ease-in-out infinite}
+@keyframes sl-shk{0%,6%{transform:rotate(0)}12%,44%{transform:rotate(40deg)}50%,100%{transform:rotate(0)}}
+#sl-rg{transform-box:fill-box;transform-origin:center;animation:sl-rg 5s ease-out infinite;opacity:0}
+@keyframes sl-rg{0%,50%{transform:scale(1);opacity:0}52%{transform:scale(1);opacity:.8}66%{transform:scale(1.9);opacity:0}68%,69%{transform:scale(1);opacity:0}70%{transform:scale(1);opacity:.8}86%{transform:scale(1.9);opacity:0}100%{transform:scale(1.9);opacity:0}}
+#sl-wm{animation:sl-wm 5s ease-out infinite;opacity:0}
+@keyframes sl-wm{0%,56%{opacity:0;transform:translateY(6px)}64%,93%{opacity:1;transform:translateY(0)}98%,100%{opacity:0;transform:translateY(0)}}
+.sl-tg{fill-opacity:0;animation:sl-tg 5s ease-out infinite}
+.sl-t2{animation-delay:.25s}.sl-t3{animation-delay:.5s}
+@keyframes sl-tg{0%,62%{fill-opacity:0}70%,93%{fill-opacity:1}98%,100%{fill-opacity:0}}
+.sl-st{fill-opacity:0;animation-duration:5s;animation-iteration-count:infinite}
+.sl-s1{animation-name:sl-s1}.sl-s2{animation-name:sl-s2}.sl-s3{animation-name:sl-s3}
+@keyframes sl-s1{0%,2%{fill-opacity:0}6%,36%{fill-opacity:1}40%,100%{fill-opacity:0}}
+@keyframes sl-s2{0%,40%{fill-opacity:0}44%,60%{fill-opacity:1}64%,100%{fill-opacity:0}}
+@keyframes sl-s3{0%,62%{fill-opacity:0}66%,93%{fill-opacity:1}98%,100%{fill-opacity:0}}

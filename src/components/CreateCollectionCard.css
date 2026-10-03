@@ -1,0 +1,118 @@
+:root { --cc-cycle: 7s; --cc-ease: cubic-bezier(.4, 0, .2, 1); --cc-blue: #1a5cff; --cc-green: #16a34a; }
+
+.create-collection-card {
+  position: relative; width: 100%; height: 100%; padding: 20px 0; border-radius: 24px;
+  background: #fff; border: 1px solid #e5e7eb; color: #374151; cursor: pointer; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  transition: transform .15s var(--cc-ease), box-shadow .25s var(--cc-ease), border-color .25s var(--cc-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.create-collection-card:hover { 
+  box-shadow: 0 8px 22px rgba(15,23,42,.08); 
+  animation: cc-border var(--cc-cycle) var(--cc-ease) infinite; 
+  animation-delay: -0.6s; 
+}
+.create-collection-card:active { transform: scale(.97); }
+
+@keyframes cc-border { 0%, 46% { border-color: #e5e7eb; } 54%, 82% { border-color: #bbf7d0; } 90%, 100% { border-color: #e5e7eb; } }
+
+.cc-glow {
+  position: absolute; z-index: -1; inset: 0; opacity: 0;
+  background: radial-gradient(circle at 50% 36%, rgba(26,92,255,.13), transparent 62%);
+}
+.create-collection-card:hover .cc-glow { animation: cc-glow var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-glow { 0%, 46% { opacity: 0; } 54% { opacity: 1; } 70%, 100% { opacity: 0; } }
+
+.cc-stage { display: grid; place-items: center; width: 90px; height: 62px; }
+.cc-stage > * { grid-area: 1 / 1; }
+
+.cc-circle {
+  width: 50px; height: 50px; border-radius: 50%; background: #f3f4f6;
+  display: grid; place-items: center; 
+}
+.create-collection-card:hover .cc-circle { animation: cc-circleVis var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+.cc-circle svg { width: 24px; height: 24px; }
+.cc-circle path { fill: none; stroke: #475569; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes cc-circleVis {
+  0%, 8% { opacity: 1; transform: scale(1); } 12%, 88% { opacity: 0; transform: scale(.6); }
+  94%, 100% { opacity: 1; transform: scale(1); }
+}
+
+.cc-folder {
+  position: relative; width: 58px; height: 42px; opacity: 0; margin-top: 6px;
+}
+.create-collection-card:hover .cc-folder { animation: cc-folder var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-folder {
+  0%, 10% { opacity: 0; transform: scale(.7); }
+  15% { opacity: 1; transform: scale(1); }
+  24% { opacity: 1; transform: scale(1.05); } 26% { opacity: 1; transform: scale(1); }
+  30% { opacity: 1; transform: scale(1.05); } 32% { opacity: 1; transform: scale(1); }
+  36% { opacity: 1; transform: scale(1.05); } 38% { opacity: 1; transform: scale(1); }
+  47% { opacity: 1; transform: scale(1.08); } 51%, 84% { opacity: 1; transform: scale(1); }
+  90%, 100% { opacity: 0; transform: scale(.85); }
+}
+.cc-back, .cc-front { position: absolute; left: 0; right: 0; }
+.cc-back { top: 0; bottom: 0; border-radius: 8px; background: #cbd5e1; }
+.create-collection-card:hover .cc-back { animation: cc-backCol var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+.cc-back::before { content: ""; position: absolute; left: 0; top: -6px; width: 22px; height: 10px; border-radius: 5px 5px 0 0; background: inherit; }
+.cc-front { bottom: 0; height: 28px; z-index: 3; border-radius: 6px 6px 8px 8px; background: #94a3b8; }
+.create-collection-card:hover .cc-front { animation: cc-frontCol var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-backCol { 0%, 44% { background: #cbd5e1; } 52%, 100% { background: #9db9ff; } }
+@keyframes cc-frontCol { 0%, 44% { background: #94a3b8; } 52%, 100% { background: var(--cc-blue); } }
+
+.cc-d { position: absolute; z-index: 2; top: 0; width: 18px; height: 22px; border-radius: 3px; background: #fff; border: 1px solid #e2e8f0; opacity: 0; }
+.cc-d::before { content: ""; position: absolute; left: 3px; right: 3px; top: 5px; height: 2px; border-radius: 1px; background: #cbd5e1; box-shadow: 0 4px 0 #cbd5e1; }
+.cc-d1 { left: 7px; }
+.cc-d2 { left: 20px; }
+.cc-d3 { left: 33px; }
+.create-collection-card:hover .cc-d1 { animation: cc-d1 var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+.create-collection-card:hover .cc-d2 { animation: cc-d2 var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+.create-collection-card:hover .cc-d3 { animation: cc-d3 var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-d1 { 0%, 15% { opacity: 0; transform: translateY(-34px); } 18% { opacity: 1; } 24%, 100% { opacity: 1; transform: translateY(6px); } }
+@keyframes cc-d2 { 0%, 21% { opacity: 0; transform: translateY(-34px); } 24% { opacity: 1; } 30%, 100% { opacity: 1; transform: translateY(2px); } }
+@keyframes cc-d3 { 0%, 27% { opacity: 0; transform: translateY(-34px); } 30% { opacity: 1; } 36%, 100% { opacity: 1; transform: translateY(5px); } }
+
+.cc-badge {
+  position: absolute; z-index: 4; right: -8px; bottom: -8px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--cc-green); display: grid; place-items: center; border: 2px solid #fff;
+  transform: scale(0);
+}
+.create-collection-card:hover .cc-badge { animation: cc-badge var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-badge { 0%, 44% { transform: scale(0); } 49% { transform: scale(1.15); } 52%, 100% { transform: scale(1); } }
+.cc-badge svg { width: 12px; height: 12px; }
+.cc-badge path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; }
+.create-collection-card:hover .cc-badge path { animation: cc-tick var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-tick { 0%, 49% { stroke-dashoffset: 20; } 56%, 100% { stroke-dashoffset: 0; } }
+
+.cc-labels { display: grid; place-items: center; width: 100%; height: 48px; }
+.cc-labels span {
+  grid-area: 1 / 1; font-size: 14px; font-weight: 500; line-height: 1.4; letter-spacing: -.01em;
+  text-align: center; text-wrap: balance; will-change: transform, opacity;
+}
+.cc-l-idle { opacity: 1; transform: none; }
+.cc-l-up { opacity: 0; transform: translateY(8px); }
+.cc-l-saved { opacity: 0; transform: translateY(8px); }
+.create-collection-card:hover .cc-l-idle { animation: cc-lIdle var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+.create-collection-card:hover .cc-l-up { animation: cc-lUp var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+.create-collection-card:hover .cc-l-saved { animation: cc-lSaved var(--cc-cycle) var(--cc-ease) infinite; animation-delay: -0.6s; }
+@keyframes cc-lIdle { 0%, 8% { opacity: 1; transform: none; } 11%, 88% { opacity: 0; transform: translateY(-8px); } 89% { opacity: 0; transform: translateY(8px); } 94%, 100% { opacity: 1; transform: none; } }
+@keyframes cc-lUp { 0%, 13% { opacity: 0; transform: translateY(8px); } 16%, 39% { opacity: 1; transform: none; } 42%, 100% { opacity: 0; transform: translateY(-8px); } }
+@keyframes cc-lSaved { 0%, 47% { opacity: 0; transform: translateY(8px); } 51%, 82% { opacity: 1; transform: none; } 86%, 100% { opacity: 0; transform: translateY(-8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .create-collection-card:hover { animation: none; }
+  .create-collection-card:hover .cc-glow,
+  .create-collection-card:hover .cc-circle,
+  .create-collection-card:hover .cc-folder,
+  .create-collection-card:hover .cc-back,
+  .create-collection-card:hover .cc-front,
+  .create-collection-card:hover .cc-d1,
+  .create-collection-card:hover .cc-d2,
+  .create-collection-card:hover .cc-d3,
+  .create-collection-card:hover .cc-badge,
+  .create-collection-card:hover .cc-badge path,
+  .create-collection-card:hover .cc-l-idle,
+  .create-collection-card:hover .cc-l-up,
+  .create-collection-card:hover .cc-l-saved { animation: none; }
+}

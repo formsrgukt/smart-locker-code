@@ -1,0 +1,137 @@
+:root {
+  --add-info-cycle: 7s;
+  --add-info-ease: cubic-bezier(.4, 0, .2, 1);
+  --add-info-blue: #1a5cff;
+  --add-info-green: #16a34a;
+}
+
+.add-info-card {
+  position: relative; width: 100%; height: 100%; padding: 20px 0; border-radius: 24px;
+  background: #fff; border: 1px solid #e5e7eb; color: #374151; cursor: pointer; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  transition: transform .15s var(--add-info-ease), box-shadow .25s var(--add-info-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+/* Ensure the animation only plays on hover to match UploadCard, or let it play constantly if we want.
+   The user's original HTML had it playing constantly. Let's make it play on hover for better performance. */
+.add-info-card:hover { box-shadow: 0 8px 22px rgba(15,23,42,.08); border-color: #bbf7d0; }
+.add-info-card:active { transform: scale(.97); }
+
+.add-info-glow {
+  position: absolute; z-index: -1; inset: 0; opacity: 0;
+  background: radial-gradient(circle at 50% 36%, rgba(26,92,255,.13), transparent 62%);
+}
+.add-info-card:hover .add-info-glow {
+  animation: ai-glow var(--add-info-cycle) var(--add-info-ease) infinite;
+  animation-delay: -0.6s;
+}
+@keyframes ai-glow { 0%, 44% { opacity: 0; } 52% { opacity: 1; } 68%, 100% { opacity: 0; } }
+
+.add-info-stage { display: grid; place-items: center; width: 80px; height: 60px; }
+.add-info-stage > * { grid-area: 1 / 1; }
+
+.add-info-circle {
+  width: 50px; height: 50px; border-radius: 50%; background: #f3f4f6;
+  display: grid; place-items: center;
+}
+.add-info-card:hover .add-info-circle {
+  animation: ai-circleVis var(--add-info-cycle) var(--add-info-ease) infinite;
+  animation-delay: -0.6s;
+}
+.add-info-circle svg { width: 24px; height: 24px; }
+.add-info-circle circle, .add-info-circle path { fill: none; stroke: #475569; stroke-width: 1.8; stroke-linecap: round; }
+@keyframes ai-circleVis {
+  0%, 8% { opacity: 1; transform: scale(1); } 12%, 88% { opacity: 0; transform: scale(.6); }
+  94%, 100% { opacity: 1; transform: scale(1); }
+}
+
+.add-info-scene { position: relative; display: grid; place-items: center; }
+.add-info-idcard {
+  position: relative; width: 66px; height: 44px; border-radius: 10px; opacity: 0; transform: scale(.7);
+  background: #f8fafc; border: 1.5px solid #cbd5e1;
+}
+.add-info-card:hover .add-info-idcard {
+  animation: ai-idcard var(--add-info-cycle) var(--add-info-ease) infinite;
+  animation-delay: -0.6s;
+}
+@keyframes ai-idcard {
+  0%, 10% { opacity: 0; transform: scale(.7); }
+  15%, 43% { opacity: 1; transform: scale(1); }
+  46% { opacity: 1; transform: scale(1.06); }
+  50%, 84% { opacity: 1; transform: scale(1); }
+  90%, 100% { opacity: 0; transform: scale(.85); }
+}
+
+.add-info-avatar {
+  position: absolute; left: 8px; top: 50%; margin-top: -10px; width: 20px; height: 20px; border-radius: 50%;
+  background: #cbd5e1; display: grid; place-items: center; transform: scale(0);
+}
+.add-info-card:hover .add-info-avatar {
+  animation: ai-avatar var(--add-info-cycle) var(--add-info-ease) infinite;
+  animation-delay: -0.6s;
+}
+.add-info-avatar svg { width: 13px; height: 13px; }
+.add-info-avatar circle, .add-info-avatar path { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+@keyframes ai-avatar {
+  0%, 16% { transform: scale(0); background: #cbd5e1; }
+  22% { transform: scale(1.12); }
+  25% { transform: scale(1); }
+  32%, 100% { transform: scale(1); background: var(--add-info-blue); }
+}
+
+.add-info-ln { position: absolute; left: 35px; height: 3px; border-radius: 2px; background: #94a3b8; transform: scaleX(0); transform-origin: left; }
+.add-info-ln1 { top: 11px; width: 24px; }
+.add-info-ln2 { top: 20px; width: 18px; }
+.add-info-ln3 { top: 29px; width: 12px; }
+.add-info-card:hover .add-info-ln1 { animation: ai-ln1 var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+.add-info-card:hover .add-info-ln2 { animation: ai-ln2 var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+.add-info-card:hover .add-info-ln3 { animation: ai-ln3 var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+@keyframes ai-ln1 { 0%, 24% { transform: scaleX(0); } 29%, 100% { transform: scaleX(1); } }
+@keyframes ai-ln2 { 0%, 29% { transform: scaleX(0); } 34%, 100% { transform: scaleX(1); } }
+@keyframes ai-ln3 { 0%, 34% { transform: scaleX(0); } 39%, 100% { transform: scaleX(1); } }
+
+.add-info-badge {
+  position: absolute; right: -8px; bottom: -8px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--add-info-green); display: grid; place-items: center; border: 2px solid #fff;
+  transform: scale(0); 
+}
+.add-info-card:hover .add-info-badge { animation: ai-badge var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+@keyframes ai-badge { 0%, 43% { transform: scale(0); } 48% { transform: scale(1.15); } 51%, 100% { transform: scale(1); } }
+
+.add-info-badge svg { width: 12px; height: 12px; }
+.add-info-badge path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; }
+.add-info-card:hover .add-info-badge path { animation: ai-tick var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+@keyframes ai-tick { 0%, 48% { stroke-dashoffset: 20; } 55%, 100% { stroke-dashoffset: 0; } }
+
+.add-info-labels { display: grid; place-items: center; width: 200px; height: 48px; }
+.add-info-labels span {
+  grid-area: 1 / 1; font-size: 14px; font-weight: 500; line-height: 1.4; letter-spacing: -.01em;
+  text-align: center; text-wrap: balance; will-change: transform, opacity;
+}
+.add-info-l-idle { opacity: 1; transform: none; }
+.add-info-l-up { opacity: 0; transform: translateY(8px); }
+.add-info-l-saved { opacity: 0; transform: translateY(8px); }
+
+.add-info-card:hover .add-info-l-idle { animation: ai-lIdle var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+.add-info-card:hover .add-info-l-up { animation: ai-lUp var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+.add-info-card:hover .add-info-l-saved { animation: ai-lSaved var(--add-info-cycle) var(--add-info-ease) infinite; animation-delay: -0.6s; }
+
+@keyframes ai-lIdle { 0%, 8% { opacity: 1; transform: none; } 11%, 88% { opacity: 0; transform: translateY(-8px); } 89% { opacity: 0; transform: translateY(8px); } 94%, 100% { opacity: 1; transform: none; } }
+@keyframes ai-lUp { 0%, 13% { opacity: 0; transform: translateY(8px); } 16%, 38% { opacity: 1; transform: none; } 41%, 100% { opacity: 0; transform: translateY(-8px); } }
+@keyframes ai-lSaved { 0%, 46% { opacity: 0; transform: translateY(8px); } 50%, 82% { opacity: 1; transform: none; } 86%, 100% { opacity: 0; transform: translateY(-8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .add-info-card:hover .add-info-glow,
+  .add-info-card:hover .add-info-circle,
+  .add-info-card:hover .add-info-idcard,
+  .add-info-card:hover .add-info-avatar,
+  .add-info-card:hover .add-info-ln1,
+  .add-info-card:hover .add-info-ln2,
+  .add-info-card:hover .add-info-ln3,
+  .add-info-card:hover .add-info-badge,
+  .add-info-card:hover .add-info-badge path,
+  .add-info-card:hover .add-info-l-idle,
+  .add-info-card:hover .add-info-l-up,
+  .add-info-card:hover .add-info-l-saved { animation: none; }
+}

@@ -1,0 +1,73 @@
+.pdf-loader-wrapper {
+  --cycle: 3s; --flip: cubic-bezier(.45, 0, .2, 1); --soft: cubic-bezier(.4, 0, .2, 1);
+  --bg: transparent; --page: #fff; --line: #cbd5e1; --text: #2b3445; --red: #e5393b;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 4rem 0;
+}
+.pdf-loader-wrapper .loader { display: flex; flex-direction: column; align-items: center; gap: 40px; }
+
+/* Timeline (--cycle): 0-6% rest | 6-40% open | 40-68% hold, lines appear | 68-94% close | 94-100% rest */
+.pdf-loader-wrapper .scene { position: relative; width: 88px; height: 112px; perspective: 1000px; }
+.pdf-loader-wrapper .scene > * , .pdf-loader-wrapper .lift, .pdf-loader-wrapper .book, .pdf-loader-wrapper .cover { transform-style: preserve-3d; }
+
+.pdf-loader-wrapper .ground {
+  position: absolute; left: 50%; bottom: -22px; width: 84px; height: 12px; margin-left: -42px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(15,23,42,.12), transparent); filter: blur(2px);
+  animation: pl-ground var(--cycle) var(--flip) infinite;
+}
+@keyframes pl-ground { 0%, 6% { transform: scaleX(1); opacity: .9; } 40%, 68% { transform: scaleX(1.9); opacity: .6; } 94%, 100% { transform: scaleX(1); opacity: .9; } }
+
+.pdf-loader-wrapper .lift { position: absolute; inset: 0; animation: pl-lift var(--cycle) var(--soft) infinite; }
+@keyframes pl-lift { 0%, 6% { transform: translateY(0); } 23% { transform: translateY(-5px); } 40%, 68% { transform: translateY(0); } 81% { transform: translateY(-5px); } 94%, 100% { transform: translateY(0); } }
+
+.pdf-loader-wrapper .book { position: absolute; inset: 0; animation: pl-slide var(--cycle) var(--flip) infinite; }
+@keyframes pl-slide { 0%, 6% { transform: translateX(0); } 40%, 68% { transform: translateX(44px); } 94%, 100% { transform: translateX(0); } }
+
+.pdf-loader-wrapper .page, .pdf-loader-wrapper .face {
+  position: absolute; inset: 0; border-radius: 8px; background: var(--page);
+  box-shadow: 0 0 0 1px rgba(148,163,184,.35), 0 8px 20px rgba(15,23,42,.12);
+}
+.pdf-loader-wrapper .page::after, .pdf-loader-wrapper .face.front::after {
+  content: ""; position: absolute; top: 0; right: 0; width: 18px; height: 18px; border-top-right-radius: 8px;
+  background: linear-gradient(225deg, transparent 50%, rgba(148,163,184,.45) 50%);
+}
+
+/* inner page: lines fade in softly once open */
+.pdf-loader-wrapper .page { padding: 22px 14px 0; overflow: hidden; }
+.pdf-loader-wrapper .page i { display: block; height: 4px; margin-bottom: 9px; border-radius: 2px; background: var(--line); opacity: 0; transform: translateY(4px); }
+.pdf-loader-wrapper .page i:nth-child(1) { width: 60%;  animation: pl-in1 var(--cycle) var(--soft) infinite; }
+.pdf-loader-wrapper .page i:nth-child(2) { width: 100%; animation: pl-in2 var(--cycle) var(--soft) infinite; }
+.pdf-loader-wrapper .page i:nth-child(3) { width: 85%;  animation: pl-in3 var(--cycle) var(--soft) infinite; }
+.pdf-loader-wrapper .page i:nth-child(4) { height: 26px; margin-top: 4px; border-radius: 4px; background: rgba(26,92,255,.18); animation: pl-in4 var(--cycle) var(--soft) infinite; }
+@keyframes pl-in1 { 0%, 36% { opacity: 0; transform: translateY(4px); } 46%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+@keyframes pl-in2 { 0%, 39% { opacity: 0; transform: translateY(4px); } 49%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+@keyframes pl-in3 { 0%, 42% { opacity: 0; transform: translateY(4px); } 52%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+@keyframes pl-in4 { 0%, 45% { opacity: 0; transform: translateY(4px); } 56%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+
+/* shadow the cover casts on the page as it passes over */
+.pdf-loader-wrapper .cast { position: absolute; inset: 0; border-radius: 8px; pointer-events: none; background: linear-gradient(90deg, rgba(15,23,42,.12), transparent 70%); opacity: 0; animation: pl-cast var(--cycle) var(--soft) infinite; }
+@keyframes pl-cast { 0%, 6% { opacity: 0; } 20% { opacity: 1; } 40%, 68% { opacity: 0; } 80% { opacity: 1; } 94%, 100% { opacity: 0; } }
+
+/* cover */
+.pdf-loader-wrapper .cover { position: absolute; inset: 0; transform-origin: left center; animation: pl-flip var(--cycle) var(--flip) infinite; }
+@keyframes pl-flip { 0%, 6% { transform: rotateY(0); } 40%, 68% { transform: rotateY(-170deg); } 94%, 100% { transform: rotateY(0); } }
+.pdf-loader-wrapper .face { backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.pdf-loader-wrapper .face.back { transform: rotateY(180deg); padding: 22px 14px 0; }
+.pdf-loader-wrapper .face.back i { display: block; height: 4px; margin-bottom: 9px; border-radius: 2px; background: var(--line); opacity: .55; }
+.pdf-loader-wrapper .face.back i:nth-child(1) { width: 70%; } .pdf-loader-wrapper .face.back i:nth-child(2) { width: 100%; } .pdf-loader-wrapper .face.back i:nth-child(3) { width: 55%; }
+.pdf-loader-wrapper .face.front { display: grid; place-items: center; }
+.pdf-loader-wrapper .badge { padding: 6px 11px; border-radius: 6px; background: var(--red); color: #fff; font-size: 13px; font-weight: 600; letter-spacing: .08em; }
+/* light falls off as the cover turns */
+.pdf-loader-wrapper .face::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; background: linear-gradient(270deg, rgba(15,23,42,.2), transparent 80%); }
+.pdf-loader-wrapper .face.front::before { animation: pl-fshade var(--cycle) var(--flip) infinite; }
+.pdf-loader-wrapper .face.back::before  { background: linear-gradient(90deg, rgba(15,23,42,.2), transparent 80%); animation: pl-bshade var(--cycle) var(--flip) infinite; }
+@keyframes pl-fshade { 0%, 6% { opacity: 0; } 23% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes pl-bshade { 0%, 23% { opacity: 1; } 40%, 68% { opacity: 0; } 85%, 100% { opacity: 1; } }
+
+.pdf-loader-wrapper .label { font-size: 15px; font-weight: 600; color: #64748b; letter-spacing: -.01em; display: inline-flex; }
+.pdf-loader-wrapper .dots span { opacity: .25; animation: pl-dot 1.2s var(--soft) infinite; }
+.pdf-loader-wrapper .dots span:nth-child(2) { animation-delay: .15s; } .pdf-loader-wrapper .dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes pl-dot { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }

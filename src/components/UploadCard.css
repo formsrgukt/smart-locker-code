@@ -1,0 +1,222 @@
+.upload-card-root {
+  --cycle: 7.6s;   /* ~3s idle + ~4s upload sequence + return */
+  --out: cubic-bezier(.22, 1, .36, 1);
+  --inout: cubic-bezier(.65, 0, .35, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.upload-card-btn {
+  position: relative; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 16px;
+  background: #1a5cff; color: #fff; cursor: pointer; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 10px 24px rgba(26,92,255,.35);
+  transition: transform .3s var(--out), box-shadow .3s var(--out);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 152px;
+}
+.upload-card-btn:hover { box-shadow: 0 14px 30px rgba(26,92,255,.45); }
+.upload-card-btn:active { transform: scale(.97); transition-duration: .12s; }
+.upload-card-btn:focus-visible { outline: 3px solid #fff; outline-offset: -6px; }
+
+.upload-card-btn > * { will-change: transform, opacity; }
+
+.upload-card-glow {
+  position: absolute; z-index: -1; inset: 0; opacity: 0;
+  background: radial-gradient(circle at 50% 36%, rgba(255,255,255,.4), transparent 62%);
+}
+.upload-card-btn:hover .upload-card-glow { animation: uc-glow var(--cycle) linear infinite; animation-delay: -2.3s; }
+@keyframes uc-glow {
+  0%, 61% { opacity: 0; animation-timing-function: var(--out); }
+  68.5%   { opacity: 1; animation-timing-function: var(--inout); }
+  87%, 100% { opacity: 0; }
+}
+
+.upload-card-stage { display: grid; place-items: center; width: 80px; height: 60px; }
+.upload-card-stage > * { grid-area: 1 / 1; }
+
+.upload-card-circle {
+  position: relative;
+  width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.2);
+  display: grid; place-items: center;
+}
+.upload-card-btn:hover .upload-card-circle { animation: uc-circleVis var(--cycle) linear infinite; animation-delay: -2.3s; }
+.upload-card-circle::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.7); opacity: 0;
+}
+.upload-card-btn:hover .upload-card-circle::after { animation: uc-ring 1.5s var(--out) infinite; }
+.upload-card-circle svg { width: 26px; height: 26px; }
+.upload-card-btn:hover .upload-card-circle svg { animation: uc-arrowBob 1.5s ease-in-out infinite; }
+.upload-card-circle path { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+@keyframes uc-ring {
+  0%   { transform: scale(1);   opacity: .6; }
+  80%, 100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes uc-arrowBob {
+  0%, 100% { transform: translateY(2px); }
+  50%      { transform: translateY(-3px); }
+}
+@keyframes uc-circleVis {
+  0%, 38% { opacity: 1; transform: scale(1);   animation-timing-function: var(--inout); }
+  46%, 88% { opacity: 0; transform: scale(.55); animation-timing-function: var(--out); }
+  96%, 100% { opacity: 1; transform: scale(1); }
+}
+
+.upload-card-scene { display: grid; place-items: center; opacity: 0; }
+.upload-card-btn:hover .upload-card-scene { animation: uc-sceneVis var(--cycle) linear infinite; animation-delay: -2.3s; }
+.upload-card-scene > * { grid-area: 1 / 1; position: relative; }
+@keyframes uc-sceneVis {
+  0%, 38% { opacity: 0; transform: scale(.88); animation-timing-function: var(--out); }
+  46%, 83% { opacity: 1; transform: scale(1); animation-timing-function: var(--inout); }
+  90%, 100% { opacity: 0; transform: scale(.94); }
+}
+
+.upload-card-drive {
+  z-index: 2; width: 62px; height: 42px; border-radius: 11px;
+  background: #4d84ff; border: 1.5px solid rgba(255,255,255,.7);
+}
+.upload-card-btn:hover .upload-card-drive { animation: uc-drivePulse var(--cycle) linear infinite; animation-delay: -2.3s; }
+@keyframes uc-drivePulse {
+  0%, 55% { transform: scale(1);    animation-timing-function: var(--out); }
+  59%     { transform: scale(1.06); animation-timing-function: var(--inout); }
+  66%, 100% { transform: scale(1); }
+}
+.upload-card-slot { position: absolute; top: 9px; left: 10px; right: 10px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.75); }
+.upload-card-track { position: absolute; bottom: 9px; left: 10px; width: 30px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; }
+.upload-card-fill { height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+.upload-card-btn:hover .upload-card-fill { animation: uc-fill var(--cycle) linear infinite; animation-delay: -2.3s; }
+@keyframes uc-fill {
+  0%, 45.5% { transform: scaleX(0); animation-timing-function: var(--inout); }
+  59%, 100% { transform: scaleX(1); }
+}
+.upload-card-led { position: absolute; bottom: 8.5px; right: 11px; width: 5px; height: 5px; border-radius: 50%; background: #fff; opacity: .5; }
+.upload-card-btn:hover .upload-card-led { animation: uc-led var(--cycle) linear infinite; animation-delay: -2.3s; }
+@keyframes uc-led {
+  0%, 45.5% { opacity: .5; animation-timing-function: ease-in-out; }
+  49% { opacity: 1; animation-timing-function: ease-in-out; }
+  52.7% { opacity: .5; animation-timing-function: ease-in-out; }
+  56.4% { opacity: 1; animation-timing-function: ease-in-out; }
+  61%, 100% { opacity: .5; }
+}
+
+.upload-card-doc {
+  z-index: 1; width: 22px; height: 28px; border-radius: 4px; background: #fff; opacity: 0;
+}
+.upload-card-btn:hover .upload-card-doc { animation: uc-doc var(--cycle) linear infinite; animation-delay: -2.3s; }
+.upload-card-doc::before {
+  content: ""; position: absolute; left: 5px; right: 5px; top: 8px; height: 2px; border-radius: 1px;
+  background: rgba(26,92,255,.4); box-shadow: 0 5px 0 rgba(26,92,255,.4), 0 10px 0 rgba(26,92,255,.4);
+}
+@keyframes uc-doc {
+  0%, 40% { opacity: 0; transform: translateY(40px) scale(1);  animation-timing-function: var(--out); }
+  46.7%   { opacity: 1; transform: translateY(26px) scale(1);  animation-timing-function: var(--inout); }
+  59%     { opacity: 1; transform: translateY(0)    scale(.9); animation-timing-function: ease-out; }
+  61%, 100% { opacity: 0; transform: translateY(0)  scale(.9); }
+}
+
+.upload-card-lock {
+  z-index: 3; justify-self: end; align-self: end; margin: 0 -2px -4px 0;
+  width: 24px; height: 24px; border-radius: 50%; background: #fff; display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.22); transform: scale(0); opacity: 0;
+}
+.upload-card-btn:hover .upload-card-lock { animation: uc-lockPop var(--cycle) linear infinite; animation-delay: -2.3s; }
+@keyframes uc-lockPop {
+  0%, 60% { transform: scale(0) rotate(-12deg); opacity: 0; animation-timing-function: var(--spring); }
+  67.5%   { transform: scale(1) rotate(0);      opacity: 1; animation-timing-function: linear; }
+  82%     { transform: scale(1) rotate(0);      opacity: 1; animation-timing-function: var(--inout); }
+  88%, 100% { transform: scale(0) rotate(0);    opacity: 0; }
+}
+.upload-card-lock svg { width: 14px; height: 14px; overflow: visible; }
+.upload-card-lock .uc-body { fill: #1a5cff; }
+.upload-card-lock .uc-shackle { fill: none; stroke: #1a5cff; stroke-width: 2.2; stroke-linecap: round; transform-box: fill-box; }
+.upload-card-btn:hover .uc-shackle { animation: uc-shackle var(--cycle) linear infinite; animation-delay: -2.3s; }
+@keyframes uc-shackle {
+  0%, 65% { transform: translateY(-2.5px); animation-timing-function: var(--spring); }
+  71%, 100% { transform: translateY(0); }
+}
+
+.upload-card-labels { display: grid; place-items: center; height: 48px; }
+.upload-card-labels span { grid-area: 1 / 1; font-size: 14px; font-weight: 600; line-height: 1.3; text-align: center; letter-spacing: .1px; }
+.uc-l-idle  { opacity: 1; transform: translateY(0); filter: blur(0); }
+.uc-l-up    { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+.uc-l-saved { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+
+.upload-card-btn:hover .uc-l-idle  { animation: uc-lIdle var(--cycle) linear infinite; animation-delay: -2.3s; }
+.upload-card-btn:hover .uc-l-up    { animation: uc-lUp var(--cycle) linear infinite; animation-delay: -2.3s; }
+.upload-card-btn:hover .uc-l-saved { animation: uc-lSaved var(--cycle) linear infinite; animation-delay: -2.3s; }
+
+@keyframes uc-lIdle {
+  0%, 38% { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+  44%, 88% { opacity: 0; transform: translateY(-8px); filter: blur(4px); animation-timing-function: var(--out); }
+  96%, 100% { opacity: 1; transform: translateY(0);   filter: blur(0); }
+}
+@keyframes uc-lUp {
+  0%, 40.7% { opacity: 0; transform: translateY(8px);  filter: blur(4px); animation-timing-function: var(--out); }
+  46.1%   { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: linear; }
+  56.4%   { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+  62.4%, 100% { opacity: 0; transform: translateY(-8px); filter: blur(4px); }
+}
+@keyframes uc-lSaved {
+  0%, 58.9% { opacity: 0; transform: translateY(8px);  filter: blur(4px); animation-timing-function: var(--out); }
+  66.2%   { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: linear; }
+  82%     { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+  88%, 100% { opacity: 0; transform: translateY(-8px); filter: blur(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upload-card-btn:hover .upload-card-glow, .upload-card-btn:hover .upload-card-circle, .upload-card-btn:hover .upload-card-circle::after, .upload-card-btn:hover .upload-card-circle svg, .upload-card-btn:hover .upload-card-scene, .upload-card-btn:hover .upload-card-drive, .upload-card-btn:hover .upload-card-fill, .upload-card-btn:hover .upload-card-led, .upload-card-btn:hover .upload-card-doc, .upload-card-btn:hover .upload-card-lock, .upload-card-btn:hover .uc-shackle, .upload-card-btn:hover .upload-card-labels span { animation: none; }
+  .upload-card-lock, .upload-card-scene { opacity: 0; }
+}
+
+
+
+@keyframes uc-fill-indeterminate {
+  0% { transform: scaleX(0.2); }
+  100% { transform: scaleX(0.8); }
+}
+@keyframes uc-led-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes uc-successPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* OVERRIDES FOR UPLOADING STATE */
+.upload-card-btn.is-uploading .upload-card-scene, .upload-card-btn.is-uploading:hover .upload-card-scene { opacity: 1; transform: scale(1); animation: none; }
+.upload-card-btn.is-uploading .upload-card-circle, .upload-card-btn.is-uploading:hover .upload-card-circle { opacity: 0; transform: scale(.55); animation: none; }
+.upload-card-btn.is-uploading .upload-card-circle::after, .upload-card-btn.is-uploading:hover .upload-card-circle::after { animation: none; }
+.upload-card-btn.is-uploading .upload-card-doc, .upload-card-btn.is-uploading:hover .upload-card-doc { opacity: 1; transform: translateY(26px) scale(1); animation: none; }
+.upload-card-btn.is-uploading .upload-card-glow, .upload-card-btn.is-uploading:hover .upload-card-glow { opacity: 1; animation: none; }
+.upload-card-btn.is-uploading .upload-card-drive, .upload-card-btn.is-uploading:hover .upload-card-drive { transform: scale(1.06); animation: none; }
+.upload-card-btn.is-uploading .upload-card-fill, .upload-card-btn.is-uploading:hover .upload-card-fill { animation: uc-fast-upload 1s cubic-bezier(0.65, 0, 0.35, 1) infinite !important; }
+@keyframes uc-fast-upload {
+  0%   { transform: scaleX(0); transform-origin: left; }
+  45%  { transform: scaleX(1); transform-origin: left; }
+  50%  { transform: scaleX(1); transform-origin: right; }
+  95%  { transform: scaleX(0); transform-origin: right; }
+  100% { transform: scaleX(0); transform-origin: left; }
+}
+.upload-card-btn.is-uploading .upload-card-led, .upload-card-btn.is-uploading:hover .upload-card-led { animation: uc-led-blink 1s ease-in-out infinite; }
+.upload-card-btn.is-uploading .upload-card-lock, .upload-card-btn.is-uploading:hover .upload-card-lock { opacity: 0; transform: scale(0); animation: none; }
+.upload-card-btn.is-uploading .uc-l-idle, .upload-card-btn.is-uploading:hover .uc-l-idle { opacity: 0; animation: none; }
+.upload-card-btn.is-uploading .uc-l-saved, .upload-card-btn.is-uploading:hover .uc-l-saved { opacity: 0; animation: none; }
+.upload-card-btn.is-uploading .uc-l-up, .upload-card-btn.is-uploading:hover .uc-l-up { opacity: 1; transform: translateY(0); filter: blur(0); animation: none; }
+
+/* OVERRIDES FOR SUCCESS STATE */
+.is-success .upload-card-scene { opacity: 1; transform: scale(1); animation: none; }
+.is-success .upload-card-circle { opacity: 0; transform: scale(.55); animation: none; }
+.is-success .upload-card-circle::after { animation: none; }
+.is-success .upload-card-doc { opacity: 0; transform: translateY(0) scale(0.9); animation: none; }
+.is-success .upload-card-drive { transform: scale(1); animation: none; }
+.is-success .upload-card-fill { transform: scaleX(1); animation: none; }
+.is-success .upload-card-led { opacity: 1; animation: none; }
+.is-success .upload-card-lock { opacity: 1; transform: scale(1); animation: uc-successPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+.is-success .uc-l-idle { opacity: 0; animation: none; }
+.is-success .uc-l-up { opacity: 0; animation: none; }
+.is-success .uc-l-saved { opacity: 1; transform: translateY(0); filter: blur(0); animation: none; }
+

@@ -1,0 +1,170 @@
+.scan-card-root {
+  --cycle: 5s;
+  --out:    cubic-bezier(.16, 1, .3, 1);
+  --inout:  cubic-bezier(.65, 0, .35, 1);
+  --in:     cubic-bezier(.5, 0, .9, .4);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+
+  --page: #f6f8fb;
+  --card: #ffffff;
+  --card-border: #e8ecf3;
+  --badge: #f3f5f9;
+  --ink: #3b4a63;
+  --text: #2b374d;
+  --accent: #1a5cff;
+}
+
+
+
+.scan-card-btn {
+  position: relative; width: 100%; height: 100%; padding: 0; border-radius: 24px;
+  background: var(--card); border: 1px solid var(--card-border); color: var(--text);
+  cursor: pointer; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  box-shadow: 0 1px 2px rgba(20,30,55,.04);
+  transition: transform .35s var(--out), box-shadow .35s var(--out), border-color .35s var(--out);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 152px;
+}
+.scan-card-btn:hover { box-shadow: 0 10px 28px rgba(20,30,55,.09); border-color: color-mix(in srgb, var(--accent) 25%, var(--card-border)); }
+.scan-card-btn:active { transform: scale(.975); transition-duration: .12s; }
+.scan-card-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.scan-card-stage { position: relative; display: grid; place-items: center; width: 72px; height: 72px; }
+.scan-card-stage > * { grid-area: 1 / 1; }
+
+.scan-card-badge {
+  position: relative; width: 56px; height: 56px; border-radius: 50%; overflow: hidden;
+  background: var(--badge); display: grid; place-items: center;
+}
+.scan-card-btn:hover .scan-card-badge { animation: sc-badge var(--cycle) linear infinite; animation-delay: -1.5s; }
+.scan-card-badge > * { grid-area: 1 / 1; }
+@keyframes sc-badge {
+  0%, 62.5% { background-color: var(--badge); transform: scale(1); animation-timing-function: var(--out); }
+  67%       { background-color: var(--accent); transform: scale(1.1); animation-timing-function: var(--inout); }
+  72%, 87.5% { background-color: var(--accent); transform: scale(1); animation-timing-function: var(--inout); }
+  93.75%, 100% { background-color: var(--badge); transform: scale(1); }
+}
+
+/* Scan frame (corner brackets) */
+.scan-card-frame { width: 30px; height: 30px; }
+.scan-card-btn:hover .scan-card-frame { animation: sc-frame var(--cycle) linear infinite; animation-delay: -1.5s; }
+.scan-card-frame path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.scan-card-frame { color: var(--ink); }
+@keyframes sc-frame {
+  0%      { transform: scale(1);    opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+  9.375%  { transform: scale(1.08); opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+  18.75%  { transform: scale(1);    opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+  28.125% { transform: scale(1.08); opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+  37.5%   { transform: scale(1);    opacity: 1; color: var(--ink);    animation-timing-function: var(--out); }
+  43.75%  { transform: scale(.84);  opacity: 1; color: var(--accent); animation-timing-function: var(--in); }
+  62.5%   { transform: scale(.84);  opacity: 1; color: var(--accent); animation-timing-function: var(--in); }
+  67%, 91.25% { transform: scale(.5); opacity: 0; color: var(--ink);  animation-timing-function: var(--out); }
+  98.75%, 100% { transform: scale(1); opacity: 1; color: var(--ink); }
+}
+
+/* Page inside the frame */
+.scan-card-page {
+  width: 12px; height: 15px; border-radius: 2px; background: var(--card); opacity: 0;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent);
+  position: relative;
+}
+.scan-card-btn:hover .scan-card-page { animation: sc-page var(--cycle) linear infinite; animation-delay: -1.5s; }
+.scan-card-page::before {
+  content: ""; position: absolute; left: 2px; right: 2px; top: 3px; height: 1.5px; border-radius: 1px;
+  background: color-mix(in srgb, var(--ink) 40%, transparent);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--ink) 40%, transparent), 0 6px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+}
+@keyframes sc-page {
+  0%, 37.5% { opacity: 0; transform: scale(.85); animation-timing-function: var(--out); }
+  43.75%    { opacity: 1; transform: scale(1);   animation-timing-function: var(--in); }
+  62.5%     { opacity: 1; transform: scale(1);   animation-timing-function: var(--in); }
+  67%, 100% { opacity: 0; transform: scale(.7); }
+}
+
+/* Scan beam */
+.scan-card-beam {
+  width: 22px; height: 2px; border-radius: 2px; background: var(--accent); opacity: 0;
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.scan-card-btn:hover .scan-card-beam { animation: sc-beam var(--cycle) linear infinite; animation-delay: -1.5s; }
+@keyframes sc-beam {
+  0%, 41%  { opacity: 0; transform: translateY(-9px); animation-timing-function: var(--out); }
+  43.75%   { opacity: 1; transform: translateY(-9px); animation-timing-function: var(--inout); }
+  53%      { opacity: 1; transform: translateY(9px);  animation-timing-function: var(--inout); }
+  62.5%    { opacity: 1; transform: translateY(-9px); animation-timing-function: linear; }
+  65%, 100% { opacity: 0; transform: translateY(-9px); }
+}
+
+/* Check mark */
+.scan-card-check { width: 28px; height: 28px; opacity: 0; transform: scale(.6); }
+.scan-card-btn:hover .scan-card-check { animation: sc-check var(--cycle) linear infinite; animation-delay: -1.5s; }
+.scan-card-check path {
+  fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 16; stroke-dashoffset: 16;
+}
+.scan-card-btn:hover .scan-card-check path { animation: sc-draw var(--cycle) linear infinite; animation-delay: -1.5s; }
+@keyframes sc-check {
+  0%, 63%  { opacity: 0; transform: scale(.6); animation-timing-function: var(--spring); }
+  69%, 87.5% { opacity: 1; transform: scale(1); animation-timing-function: var(--inout); }
+  93.75%, 100% { opacity: 0; transform: scale(.7); }
+}
+@keyframes sc-draw {
+  0%, 64%  { stroke-dashoffset: 16; animation-timing-function: var(--out); }
+  73%, 93.75% { stroke-dashoffset: 0; animation-timing-function: linear; }
+  100%     { stroke-dashoffset: 16; }
+}
+
+/* Ripples */
+.scan-card-ripple, .scan-card-pulse {
+  width: 56px; height: 56px; border-radius: 50%; opacity: 0; pointer-events: none;
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.scan-card-btn:hover .scan-card-ripple { animation: sc-ripple var(--cycle) linear infinite; animation-delay: -1.5s; }
+@keyframes sc-ripple {
+  0%     { transform: scale(1);    opacity: 0;  animation-timing-function: linear; }
+  1.5%   { transform: scale(1);    opacity: .6; animation-timing-function: var(--out); }
+  14%    { transform: scale(1.5);  opacity: 0;  animation-timing-function: linear; }
+  18.75% { transform: scale(1);    opacity: 0;  animation-timing-function: linear; }
+  20.25% { transform: scale(1);    opacity: .6; animation-timing-function: var(--out); }
+  32.75%, 100% { transform: scale(1.5); opacity: 0; }
+}
+.scan-card-btn:hover .scan-card-pulse { animation: sc-pulse var(--cycle) linear infinite; animation-delay: -1.5s; }
+@keyframes sc-pulse {
+  0%, 62.5% { transform: scale(1); opacity: .7; animation-timing-function: var(--out); }
+  72%, 100% { transform: scale(1.65); opacity: 0; }
+}
+
+/* Labels */
+.scan-card-labels { display: grid; place-items: center; width: 190px; height: 48px; }
+.scan-card-labels span { grid-area: 1 / 1; font-size: 17px; font-weight: 500; line-height: 1.45; text-align: center; letter-spacing: .1px; }
+.sc-l-idle  { opacity: 1; transform: translateY(0); filter: blur(0); }
+.sc-l-up    { opacity: 0; transform: translateY(6px); filter: blur(3px); }
+.sc-l-done  { opacity: 0; transform: translateY(6px); filter: blur(3px); }
+
+.scan-card-btn:hover .sc-l-idle { animation: sc-lIdle var(--cycle) linear infinite; animation-delay: -1.5s; }
+.scan-card-btn:hover .sc-l-up   { animation: sc-lUp var(--cycle) linear infinite; animation-delay: -1.5s; }
+.scan-card-btn:hover .sc-l-done { animation: sc-lDone var(--cycle) linear infinite; animation-delay: -1.5s; }
+
+@keyframes sc-lIdle {
+  0%, 37.5% { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+  41.25%    { opacity: 0; transform: translateY(-6px); filter: blur(3px); animation-timing-function: linear; }
+  92.5%     { opacity: 0; transform: translateY(6px);  filter: blur(3px); animation-timing-function: var(--out); }
+  98.75%, 100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes sc-lUp {
+  0%, 38.5% { opacity: 0; transform: translateY(6px);  filter: blur(3px); animation-timing-function: var(--out); }
+  43.75%    { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: linear; }
+  61.9%     { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+  65%, 100% { opacity: 0; transform: translateY(-6px); filter: blur(3px); }
+}
+@keyframes sc-lDone {
+  0%, 63.75% { opacity: 0; transform: translateY(6px);  filter: blur(3px); animation-timing-function: var(--out); }
+  70%        { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: linear; }
+  87.5%      { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+  92.5%, 100% { opacity: 0; transform: translateY(-6px); filter: blur(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-card-btn:hover .scan-card-badge, .scan-card-btn:hover .scan-card-frame, .scan-card-btn:hover .scan-card-page, .scan-card-btn:hover .scan-card-beam, .scan-card-btn:hover .scan-card-check, .scan-card-btn:hover .scan-card-check path, .scan-card-btn:hover .scan-card-ripple, .scan-card-btn:hover .scan-card-pulse, .scan-card-btn:hover .scan-card-labels span { animation: none; }
+}

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --cycle: 7s; --ease: cubic-bezier(.4, 0, .2, 1); --blue: #1a5cff; --green: #16a34a; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: #f1f3f7; font-family: Inter, Roboto, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility;
+  }
+  @media (prefers-color-scheme: dark) { body { background: #101216; } }
+
+  .card {
+    position: relative; width: 236px; height: 152px; padding: 0; border-radius: 28px;
+    background: #fff; border: 1px solid #e5e7eb; color: #2b3445; cursor: pointer; overflow: hidden; isolation: isolate;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+    animation: border var(--cycle) var(--ease) infinite;
+    transition: transform .15s var(--ease), box-shadow .25s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card:hover { box-shadow: 0 8px 22px rgba(15,23,42,.08); }
+  .card:active { transform: scale(.97); }
+  .card:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  @keyframes border { 0%, 46% { border-color: #e5e7eb; } 54%, 82% { border-color: #bbf7d0; } 90%, 100% { border-color: #e5e7eb; } }
+
+  /* One shared timeline (--cycle). Story:
+     0-10%   idle (original card)
+     14-38%  a folder appears and three files drop into it, one by one
+     44-52%  folder turns blue, green check badge confirms
+     49-82%  "Collection created"
+     90-100% back to idle */
+
+  .glow {
+    position: absolute; z-index: -1; inset: 0; opacity: 0;
+    background: radial-gradient(circle at 50% 36%, rgba(26,92,255,.13), transparent 62%);
+    animation: glow var(--cycle) var(--ease) infinite;
+  }
+  @keyframes glow { 0%, 46% { opacity: 0; } 54% { opacity: 1; } 70%, 100% { opacity: 0; } }
+
+  .stage { display: grid; place-items: center; width: 90px; height: 62px; }
+  .stage > * { grid-area: 1 / 1; }
+
+  /* Idle icon */
+  .circle {
+    width: 50px; height: 50px; border-radius: 50%; background: #f3f4f6;
+    display: grid; place-items: center; animation: circleVis var(--cycle) var(--ease) infinite;
+  }
+  .circle svg { width: 24px; height: 24px; }
+  .circle path { fill: none; stroke: #475569; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  @keyframes circleVis {
+    0%, 8% { opacity: 1; transform: scale(1); } 12%, 88% { opacity: 0; transform: scale(.6); }
+    94%, 100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Folder scene */
+  .folder {
+    position: relative; width: 58px; height: 42px; opacity: 0; margin-top: 6px;
+    animation: folder var(--cycle) var(--ease) infinite;
+  }
+  @keyframes folder {
+    0%, 10% { opacity: 0; transform: scale(.7); }
+    15% { opacity: 1; transform: scale(1); }
+    24% { opacity: 1; transform: scale(1.05); } 26% { opacity: 1; transform: scale(1); }
+    30% { opacity: 1; transform: scale(1.05); } 32% { opacity: 1; transform: scale(1); }
+    36% { opacity: 1; transform: scale(1.05); } 38% { opacity: 1; transform: scale(1); }
+    47% { opacity: 1; transform: scale(1.08); } 51%, 84% { opacity: 1; transform: scale(1); }
+    90%, 100% { opacity: 0; transform: scale(.85); }
+  }
+  .back, .front { position: absolute; left: 0; right: 0; }
+  .back { top: 0; bottom: 0; border-radius: 8px; background: #cbd5e1; animation: backCol var(--cycle) var(--ease) infinite; }
+  .back::before { content: ""; position: absolute; left: 0; top: -6px; width: 22px; height: 10px; border-radius: 5px 5px 0 0; background: inherit; }
+  .front { bottom: 0; height: 28px; z-index: 3; border-radius: 6px 6px 8px 8px; background: #94a3b8; animation: frontCol var(--cycle) var(--ease) infinite; }
+  @keyframes backCol { 0%, 44% { background: #cbd5e1; } 52%, 100% { background: #9db9ff; } }
+  @keyframes frontCol { 0%, 44% { background: #94a3b8; } 52%, 100% { background: var(--blue); } }
+
+  .d { position: absolute; z-index: 2; top: 0; width: 18px; height: 22px; border-radius: 3px; background: #fff; border: 1px solid #e2e8f0; opacity: 0; }
+  .d::before { content: ""; position: absolute; left: 3px; right: 3px; top: 5px; height: 2px; border-radius: 1px; background: #cbd5e1; box-shadow: 0 4px 0 #cbd5e1; }
+  .d1 { left: 7px;  animation: d1 var(--cycle) var(--ease) infinite; }
+  .d2 { left: 20px; animation: d2 var(--cycle) var(--ease) infinite; }
+  .d3 { left: 33px; animation: d3 var(--cycle) var(--ease) infinite; }
+  @keyframes d1 { 0%, 15% { opacity: 0; transform: translateY(-34px); } 18% { opacity: 1; } 24%, 100% { opacity: 1; transform: translateY(6px); } }
+  @keyframes d2 { 0%, 21% { opacity: 0; transform: translateY(-34px); } 24% { opacity: 1; } 30%, 100% { opacity: 1; transform: translateY(2px); } }
+  @keyframes d3 { 0%, 27% { opacity: 0; transform: translateY(-34px); } 30% { opacity: 1; } 36%, 100% { opacity: 1; transform: translateY(5px); } }
+
+  .badge {
+    position: absolute; z-index: 4; right: -8px; bottom: -8px; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); display: grid; place-items: center; border: 2px solid #fff;
+    transform: scale(0); animation: badge var(--cycle) var(--ease) infinite;
+  }
+  @keyframes badge { 0%, 44% { transform: scale(0); } 49% { transform: scale(1.15); } 52%, 100% { transform: scale(1); } }
+  .badge svg { width: 12px; height: 12px; }
+  .badge path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; animation: tick var(--cycle) var(--ease) infinite; }
+  @keyframes tick { 0%, 49% { stroke-dashoffset: 20; } 56%, 100% { stroke-dashoffset: 0; } }
+
+  /* Labels: Create Collection -> Adding items -> Collection created */
+  .labels { display: grid; place-items: center; width: 200px; height: 48px; }
+  .labels span {
+    grid-area: 1 / 1; font-size: 17px; font-weight: 600; line-height: 1.4; letter-spacing: -.01em;
+    color: #2b3445; text-align: center; text-wrap: balance; will-change: transform, opacity;
+  }
+  .l-idle { animation: lIdle var(--cycle) var(--ease) infinite; }
+  .l-up { opacity: 0; animation: lUp var(--cycle) var(--ease) infinite; }
+  .l-saved { opacity: 0; animation: lSaved var(--cycle) var(--ease) infinite; }
+  @keyframes lIdle { 0%, 8% { opacity: 1; transform: none; } 11%, 88% { opacity: 0; transform: translateY(-8px); } 89% { opacity: 0; transform: translateY(8px); } 94%, 100% { opacity: 1; transform: none; } }
+  @keyframes lUp { 0%, 13% { opacity: 0; transform: translateY(8px); } 16%, 39% { opacity: 1; transform: none; } 42%, 100% { opacity: 0; transform: translateY(-8px); } }
+  @keyframes lSaved { 0%, 47% { opacity: 0; transform: translateY(8px); } 51%, 82% { opacity: 1; transform: none; } 86%, 100% { opacity: 0; transform: translateY(-8px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .glow, .circle, .folder, .back, .front, .d, .badge, .badge path, .labels span { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<button class="card" type="button" aria-label="Create collection">
+  <span class="glow"></span>
+
+  <span class="stage">
+    <span class="circle">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3.5 7a2 2 0 012-2h3.6l2.2 2.4h7.2a2 2 0 012 2V17a2 2 0 01-2 2H5.5a2 2 0 01-2-2z"/>
+      </svg>
+    </span>
+
+    <span class="folder" aria-hidden="true">
+      <span class="back"></span>
+      <span class="d d1"></span><span class="d d2"></span><span class="d d3"></span>
+      <span class="front"></span>
+      <span class="badge"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+    </span>
+  </span>
+
+  <span class="labels">
+    <span class="l-idle">Create<br>Collection</span>
+    <span class="l-up">Adding items</span>
+    <span class="l-saved">Collection created</span>
+  </span>
+</button>
+
+</body>
+</html>

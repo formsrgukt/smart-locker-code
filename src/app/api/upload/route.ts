@@ -8,8 +8,8 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-export const runtime = "edge";
-
+// Removed edge runtime due to body size limits
+// export const runtime = "edge";
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
@@ -27,13 +27,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            return NextResponse.json(
-                { error: 'Only image files are allowed' },
-                { status: 400, headers: corsHeaders }
-            );
-        }
+        // Accept all file types for SMART LOCKER
 
         // Validate file size (max 100MB)
         if (file.size > 100 * 1024 * 1024) {

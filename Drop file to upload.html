@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drop file to upload</title>
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --blue: #6aa6ff;
+    --blue-text: #4a8cf5;
+    --tint: #f3f8ff;
+    --page: #ffffff;
+    --text: #5b6b82;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: grid; place-items: center;
+    text-align: center;
+  }
+  .page p { margin: 6px 0; font-size: 15px; }
+  .page .files { color: var(--blue-text); min-height: 22px; }
+
+  .drop {
+    position: fixed; inset: 14px;
+    border: 2px dashed var(--blue);
+    border-radius: 22px;
+    background: var(--tint);
+    display: grid; place-items: center;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .35s ease, visibility 0s linear .35s;
+  }
+  body.dragging .drop { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+
+  .box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .box h2 { margin: 18px 0 0; font-size: 26px; font-weight: 600; color: var(--blue-text); }
+  .box span { font-size: 16px; color: var(--blue); }
+
+  .cloud { width: 72px; height: 72px; color: var(--blue); }
+  .cloud .arrow { animation: up 1.8s ease-in-out infinite; }
+  @keyframes up {
+    0%   { transform: translateY(6px);  opacity: 0; }
+    35%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { transform: translateY(-6px); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cloud .arrow { animation: none; }
+    .drop { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <p>Drag a file onto this page</p>
+  <p class="files" id="files"></p>
+</div>
+
+<div class="drop" aria-hidden="true">
+  <div class="box">
+    <svg class="cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/>
+      <g class="arrow"><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></g>
+    </svg>
+    <h2>Drop file to upload</h2>
+    <span>Release to add to this collection</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  var body = document.body, depth = 0, out = document.getElementById('files');
+
+  function hasFiles(e) {
+    var t = e.dataTransfer && e.dataTransfer.types;
+    return !!t && Array.prototype.indexOf.call(t, 'Files') > -1;
+  }
+  window.addEventListener('dragenter', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth++; body.classList.add('dragging');
+  });
+  window.addEventListener('dragover', function (e) {
+    if (hasFiles(e)) e.preventDefault();
+  });
+  window.addEventListener('dragleave', function (e) {
+    if (!hasFiles(e)) return;
+    depth = Math.max(0, depth - 1);
+    if (!depth) body.classList.remove('dragging');
+  });
+  window.addEventListener('drop', function (e) {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth = 0; body.classList.remove('dragging');
+    var f = e.dataTransfer.files;
+    out.textContent = f.length ? 'Added: ' + Array.prototype.map.call(f, function (x) { return x.name; }).join(', ') : '';
+  });
+  window.addEventListener('dragend', function () { depth = 0; body.classList.remove('dragging'); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening PDF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cycle: 3s; --flip: cubic-bezier(.45, 0, .2, 1); --soft: cubic-bezier(.4, 0, .2, 1);
+    --bg: #f1f3f7; --page: #fff; --line: #cbd5e1; --text: #2b3445; --red: #e5393b;
+  }
+  @media (prefers-color-scheme: dark) { :root { --bg: #101216; --page: #1e2228; --line: #3a414c; --text: #e8eaed; } }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--text);
+    font-family: "Lexend", sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .loader { display: flex; flex-direction: column; align-items: center; gap: 40px; }
+
+  /* Timeline (--cycle): 0-6% rest | 6-40% open | 40-68% hold, lines appear | 68-94% close | 94-100% rest */
+  .scene { position: relative; width: 88px; height: 112px; perspective: 1000px; }
+  .scene > * , .lift, .book, .cover { transform-style: preserve-3d; }
+
+  .ground {
+    position: absolute; left: 50%; bottom: -22px; width: 84px; height: 12px; margin-left: -42px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(15,23,42,.28), transparent); filter: blur(2px);
+    animation: ground var(--cycle) var(--flip) infinite;
+  }
+  @keyframes ground { 0%, 6% { transform: scaleX(1); opacity: .9; } 40%, 68% { transform: scaleX(1.9); opacity: .6; } 94%, 100% { transform: scaleX(1); opacity: .9; } }
+
+  .lift { position: absolute; inset: 0; animation: lift var(--cycle) var(--soft) infinite; }
+  @keyframes lift { 0%, 6% { transform: translateY(0); } 23% { transform: translateY(-5px); } 40%, 68% { transform: translateY(0); } 81% { transform: translateY(-5px); } 94%, 100% { transform: translateY(0); } }
+
+  .book { position: absolute; inset: 0; animation: slide var(--cycle) var(--flip) infinite; }
+  @keyframes slide { 0%, 6% { transform: translateX(0); } 40%, 68% { transform: translateX(44px); } 94%, 100% { transform: translateX(0); } }
+
+  .page, .face {
+    position: absolute; inset: 0; border-radius: 8px; background: var(--page);
+    box-shadow: 0 0 0 1px rgba(148,163,184,.35), 0 8px 20px rgba(15,23,42,.12);
+  }
+  .page::after, .face.front::after {
+    content: ""; position: absolute; top: 0; right: 0; width: 18px; height: 18px; border-top-right-radius: 8px;
+    background: linear-gradient(225deg, var(--bg) 50%, rgba(148,163,184,.45) 50%);
+  }
+
+  /* inner page: lines fade in softly once open */
+  .page { padding: 22px 14px 0; overflow: hidden; }
+  .page i { display: block; height: 4px; margin-bottom: 9px; border-radius: 2px; background: var(--line); opacity: 0; transform: translateY(4px); }
+  .page i:nth-child(1) { width: 60%;  animation: in1 var(--cycle) var(--soft) infinite; }
+  .page i:nth-child(2) { width: 100%; animation: in2 var(--cycle) var(--soft) infinite; }
+  .page i:nth-child(3) { width: 85%;  animation: in3 var(--cycle) var(--soft) infinite; }
+  .page i:nth-child(4) { height: 26px; margin-top: 4px; border-radius: 4px; background: rgba(26,92,255,.18); animation: in4 var(--cycle) var(--soft) infinite; }
+  @keyframes in1 { 0%, 36% { opacity: 0; transform: translateY(4px); } 46%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+  @keyframes in2 { 0%, 39% { opacity: 0; transform: translateY(4px); } 49%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+  @keyframes in3 { 0%, 42% { opacity: 0; transform: translateY(4px); } 52%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+  @keyframes in4 { 0%, 45% { opacity: 0; transform: translateY(4px); } 56%, 66% { opacity: 1; transform: none; } 74%, 100% { opacity: 0; transform: translateY(4px); } }
+
+  /* shadow the cover casts on the page as it passes over */
+  .cast { position: absolute; inset: 0; border-radius: 8px; pointer-events: none; background: linear-gradient(90deg, rgba(15,23,42,.28), transparent 70%); opacity: 0; animation: cast var(--cycle) var(--soft) infinite; }
+  @keyframes cast { 0%, 6% { opacity: 0; } 20% { opacity: 1; } 40%, 68% { opacity: 0; } 80% { opacity: 1; } 94%, 100% { opacity: 0; } }
+
+  /* cover */
+  .cover { position: absolute; inset: 0; transform-origin: left center; animation: flip var(--cycle) var(--flip) infinite; }
+  @keyframes flip { 0%, 6% { transform: rotateY(0); } 40%, 68% { transform: rotateY(-170deg); } 94%, 100% { transform: rotateY(0); } }
+  .face { backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+  .face.back { transform: rotateY(180deg); padding: 22px 14px 0; }
+  .face.back i { display: block; height: 4px; margin-bottom: 9px; border-radius: 2px; background: var(--line); opacity: .55; }
+  .face.back i:nth-child(1) { width: 70%; } .face.back i:nth-child(2) { width: 100%; } .face.back i:nth-child(3) { width: 55%; }
+  .face.front { display: grid; place-items: center; }
+  .badge { padding: 6px 11px; border-radius: 6px; background: var(--red); color: #fff; font-size: 13px; font-weight: 600; letter-spacing: .08em; }
+  /* light falls off as the cover turns */
+  .face::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; background: linear-gradient(270deg, rgba(15,23,42,.35), transparent 80%); }
+  .face.front::before { animation: fshade var(--cycle) var(--flip) infinite; }
+  .face.back::before  { background: linear-gradient(90deg, rgba(15,23,42,.35), transparent 80%); animation: bshade var(--cycle) var(--flip) infinite; }
+  @keyframes fshade { 0%, 6% { opacity: 0; } 23% { opacity: 1; } 100% { opacity: 1; } }
+  @keyframes bshade { 0%, 23% { opacity: 1; } 40%, 68% { opacity: 0; } 85%, 100% { opacity: 1; } }
+
+  .label { font-size: 16px; font-weight: 600; letter-spacing: -.01em; display: inline-flex; }
+  .dots span { opacity: .25; animation: dot 1.2s var(--soft) infinite; }
+  .dots span:nth-child(2) { animation-delay: .15s; } .dots span:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) { .ground, .lift, .book, .cover, .cast, .face::before, .page i, .dots span { animation: none; } .page i { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+<div class="loader" role="status" aria-live="polite">
+  <div class="scene" aria-hidden="true">
+    <span class="ground"></span>
+    <div class="lift">
+      <div class="book">
+        <div class="page"><i></i><i></i><i></i><i></i><span class="cast"></span></div>
+        <div class="cover">
+          <div class="face front"><span class="badge">PDF</span></div>
+          <div class="face back"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="label">Opening PDF<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+</div>
+
+</body>
+</html>

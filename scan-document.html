@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan Document</title>
+<style>
+  :root {
+    --cycle: 8s;
+    --out:    cubic-bezier(.16, 1, .3, 1);
+    --inout:  cubic-bezier(.65, 0, .35, 1);
+    --in:     cubic-bezier(.5, 0, .9, .4);
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+
+    --page: #f6f8fb;
+    --card: #ffffff;
+    --card-border: #e8ecf3;
+    --badge: #f3f5f9;
+    --ink: #3b4a63;
+    --text: #2b374d;
+    --accent: #1a5cff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #0f1218; --card: #171b23; --card-border: #262c38;
+      --badge: #232a36; --ink: #c3cce0; --text: #e6eaf2; --accent: #4d84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: var(--page); font-family: Inter, Roboto, "Segoe UI", system-ui, sans-serif;
+  }
+
+  .scan {
+    position: relative; width: 236px; height: 200px; padding: 0; border-radius: 24px;
+    background: var(--card); border: 1px solid var(--card-border); color: var(--text);
+    cursor: pointer; overflow: hidden; isolation: isolate;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 1px 2px rgba(20,30,55,.04);
+    transition: transform .35s var(--out), box-shadow .35s var(--out), border-color .35s var(--out);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .scan:hover { box-shadow: 0 10px 28px rgba(20,30,55,.09); border-color: color-mix(in srgb, var(--accent) 25%, var(--card-border)); }
+  .scan:active { transform: scale(.975); transition-duration: .12s; }
+  .scan:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+  /* One continuous 8s timeline
+     0 - 3.0s   idle: scan frame breathes, soft ripples
+     3.0 - 5.0s frame tightens around a page, scan beam sweeps down and back
+     5.0 - 5.6s badge fills, check draws in
+     5.1 - 7.0s "Document scanned"
+     7.0 - 8.0s eases back to idle                                         */
+
+  .stage { position: relative; display: grid; place-items: center; width: 72px; height: 72px; }
+  .stage > * { grid-area: 1 / 1; }
+
+  .badge {
+    position: relative; width: 56px; height: 56px; border-radius: 50%; overflow: hidden;
+    background: var(--badge); display: grid; place-items: center;
+    animation: badge var(--cycle) linear infinite;
+  }
+  .badge > * { grid-area: 1 / 1; }
+  @keyframes badge {
+    0%, 62.5% { background-color: var(--badge); transform: scale(1); animation-timing-function: var(--out); }
+    67%       { background-color: var(--accent); transform: scale(1.1); animation-timing-function: var(--inout); }
+    72%, 87.5% { background-color: var(--accent); transform: scale(1); animation-timing-function: var(--inout); }
+    93.75%, 100% { background-color: var(--badge); transform: scale(1); }
+  }
+
+  /* Scan frame (corner brackets) */
+  .frame { width: 30px; height: 30px; animation: frame var(--cycle) linear infinite; }
+  .frame path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .frame { color: var(--ink); }
+  @keyframes frame {
+    0%      { transform: scale(1);    opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+    9.375%  { transform: scale(1.08); opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+    18.75%  { transform: scale(1);    opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+    28.125% { transform: scale(1.08); opacity: 1; color: var(--ink);    animation-timing-function: var(--inout); }
+    37.5%   { transform: scale(1);    opacity: 1; color: var(--ink);    animation-timing-function: var(--out); }
+    43.75%  { transform: scale(.84);  opacity: 1; color: var(--accent); animation-timing-function: var(--in); }
+    62.5%   { transform: scale(.84);  opacity: 1; color: var(--accent); animation-timing-function: var(--in); }
+    67%, 91.25% { transform: scale(.5); opacity: 0; color: var(--ink);  animation-timing-function: var(--out); }
+    98.75%, 100% { transform: scale(1); opacity: 1; color: var(--ink); }
+  }
+
+  /* Page inside the frame */
+  .page {
+    width: 12px; height: 15px; border-radius: 2px; background: var(--card); opacity: 0;
+    border: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent);
+    position: relative; animation: page var(--cycle) linear infinite;
+  }
+  .page::before {
+    content: ""; position: absolute; left: 2px; right: 2px; top: 3px; height: 1.5px; border-radius: 1px;
+    background: color-mix(in srgb, var(--ink) 40%, transparent);
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--ink) 40%, transparent), 0 6px 0 color-mix(in srgb, var(--ink) 40%, transparent);
+  }
+  @keyframes page {
+    0%, 37.5% { opacity: 0; transform: scale(.85); animation-timing-function: var(--out); }
+    43.75%    { opacity: 1; transform: scale(1);   animation-timing-function: var(--in); }
+    62.5%     { opacity: 1; transform: scale(1);   animation-timing-function: var(--in); }
+    67%, 100% { opacity: 0; transform: scale(.7); }
+  }
+
+  /* Scan beam */
+  .beam {
+    width: 22px; height: 2px; border-radius: 2px; background: var(--accent); opacity: 0;
+    box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+    animation: beam var(--cycle) linear infinite;
+  }
+  @keyframes beam {
+    0%, 41%  { opacity: 0; transform: translateY(-9px); animation-timing-function: var(--out); }
+    43.75%   { opacity: 1; transform: translateY(-9px); animation-timing-function: var(--inout); }
+    53%      { opacity: 1; transform: translateY(9px);  animation-timing-function: var(--inout); }
+    62.5%    { opacity: 1; transform: translateY(-9px); animation-timing-function: linear; }
+    65%, 100% { opacity: 0; transform: translateY(-9px); }
+  }
+
+  /* Check mark */
+  .check { width: 28px; height: 28px; opacity: 0; transform: scale(.6); animation: check var(--cycle) linear infinite; }
+  .check path {
+    fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 16; stroke-dashoffset: 16; animation: draw var(--cycle) linear infinite;
+  }
+  @keyframes check {
+    0%, 63%  { opacity: 0; transform: scale(.6); animation-timing-function: var(--spring); }
+    69%, 87.5% { opacity: 1; transform: scale(1); animation-timing-function: var(--inout); }
+    93.75%, 100% { opacity: 0; transform: scale(.7); }
+  }
+  @keyframes draw {
+    0%, 64%  { stroke-dashoffset: 16; animation-timing-function: var(--out); }
+    73%, 93.75% { stroke-dashoffset: 0; animation-timing-function: linear; }
+    100%     { stroke-dashoffset: 16; }
+  }
+
+  /* Ripples */
+  .ripple, .pulse {
+    width: 56px; height: 56px; border-radius: 50%; opacity: 0; pointer-events: none;
+    border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .ripple { animation: ripple var(--cycle) linear infinite; }
+  @keyframes ripple {
+    0%     { transform: scale(1);    opacity: 0;  animation-timing-function: linear; }
+    1.5%   { transform: scale(1);    opacity: .6; animation-timing-function: var(--out); }
+    14%    { transform: scale(1.5);  opacity: 0;  animation-timing-function: linear; }
+    18.75% { transform: scale(1);    opacity: 0;  animation-timing-function: linear; }
+    20.25% { transform: scale(1);    opacity: .6; animation-timing-function: var(--out); }
+    32.75%, 100% { transform: scale(1.5); opacity: 0; }
+  }
+  .pulse { animation: pulse var(--cycle) linear infinite; }
+  @keyframes pulse {
+    0%, 62.5% { transform: scale(1); opacity: .7; animation-timing-function: var(--out); }
+    72%, 100% { transform: scale(1.65); opacity: 0; }
+  }
+
+  /* Labels */
+  .labels { display: grid; place-items: center; width: 190px; height: 48px; }
+  .labels span { grid-area: 1 / 1; font-size: 17px; font-weight: 500; line-height: 1.45; text-align: center; letter-spacing: .1px; }
+  .l-idle  { animation: lIdle var(--cycle) linear infinite; }
+  .l-up    { opacity: 0; animation: lUp var(--cycle) linear infinite; }
+  .l-done  { opacity: 0; animation: lDone var(--cycle) linear infinite; }
+
+  @keyframes lIdle {
+    0%, 37.5% { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+    41.25%    { opacity: 0; transform: translateY(-6px); filter: blur(3px); animation-timing-function: linear; }
+    92.5%     { opacity: 0; transform: translateY(6px);  filter: blur(3px); animation-timing-function: var(--out); }
+    98.75%, 100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+  @keyframes lUp {
+    0%, 38.5% { opacity: 0; transform: translateY(6px);  filter: blur(3px); animation-timing-function: var(--out); }
+    43.75%    { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: linear; }
+    61.9%     { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+    65%, 100% { opacity: 0; transform: translateY(-6px); filter: blur(3px); }
+  }
+  @keyframes lDone {
+    0%, 63.75% { opacity: 0; transform: translateY(6px);  filter: blur(3px); animation-timing-function: var(--out); }
+    70%        { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: linear; }
+    87.5%      { opacity: 1; transform: translateY(0);    filter: blur(0);   animation-timing-function: var(--inout); }
+    92.5%, 100% { opacity: 0; transform: translateY(-6px); filter: blur(3px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .badge, .frame, .page, .beam, .check, .check path, .ripple, .pulse, .labels span { animation: none; }
+    .page, .beam, .check, .ripple, .pulse, .l-up, .l-done { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<button class="scan" type="button" aria-label="Scan document">
+  <span class="stage">
+    <span class="ripple"></span>
+    <span class="pulse"></span>
+    <span class="badge">
+      <svg class="frame" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9V6a2 2 0 012-2h3"/><path d="M15 4h3a2 2 0 012 2v3"/>
+        <path d="M20 15v3a2 2 0 01-2 2h-3"/><path d="M9 20H6a2 2 0 01-2-2v-3"/>
+      </svg>
+      <span class="page"></span>
+      <span class="beam"></span>
+      <svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 12.5l3 3 6-7"/></svg>
+    </span>
+  </span>
+
+  <span class="labels">
+    <span class="l-idle">Scan<br>Document</span>
+    <span class="l-up">Scanning…</span>
+    <span class="l-done">Document<br>scanned</span>
+  </span>
+</button>
+
+</body>
+</html>
