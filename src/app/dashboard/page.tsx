@@ -6,7 +6,7 @@ import {
   Settings, Shield, Search, Bell, Plus, Upload, Scan, FileBadge, 
   GraduationCap, Briefcase, File, MoreVertical, Star, Download,
   CheckCircle2, Sparkles, Activity, ShieldCheck, ChevronRight, ChevronLeft,
-  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check
+  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle
 } from 'lucide-react';
 
 import dynamic from 'next/dynamic';
@@ -54,6 +54,9 @@ export default function Dashboard() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [collections, setCollections] = useState<{id?: string, name: string, count: number}[]>([]);
   const [twoStepEnabled, setTwoStepEnabled] = useState(true);
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
+  const [defaultFolderView, setDefaultFolderView] = useState<'list' | 'grid'>('list');
+  const [profileData, setProfileData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
@@ -62,8 +65,12 @@ export default function Dashboard() {
       const fetchPrefs = async () => {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists() && userDoc.data().twoStepVerification === false) {
-            setTwoStepEnabled(false);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setProfileData(data);
+            if (data.twoStepVerification === false) setTwoStepEnabled(false);
+            if (data.emailNotifications === false) setEmailNotificationsEnabled(false);
+            if (data.defaultFolderView) setDefaultFolderView(data.defaultFolderView);
           }
         } catch (e) {
           console.error(e);
@@ -84,6 +91,32 @@ export default function Dashboard() {
       console.error(e);
       setTwoStepEnabled(!newVal);
       showToast('Error', 'Failed to update security settings', 'error');
+    }
+  };
+
+  const toggleEmailNotifications = async () => {
+    if (!user) return;
+    const newVal = !emailNotificationsEnabled;
+    setEmailNotificationsEnabled(newVal);
+    try {
+      await setDoc(doc(db, 'users', user.uid), { emailNotifications: newVal }, { merge: true });
+      showToast(newVal ? 'Notifications Enabled' : 'Notifications Disabled', 'Your preference has been saved.', 'success');
+    } catch (e) {
+      console.error(e);
+      setEmailNotificationsEnabled(!newVal);
+      showToast('Error', 'Failed to update preferences', 'error');
+    }
+  };
+
+  const changeDefaultView = async (view: 'list' | 'grid') => {
+    if (!user) return;
+    setDefaultFolderView(view);
+    try {
+      await setDoc(doc(db, 'users', user.uid), { defaultFolderView: view }, { merge: true });
+      showToast('View Updated', `Default view set to ${view}`, 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Error', 'Failed to update preferences', 'error');
     }
   };
 
@@ -508,6 +541,20 @@ export default function Dashboard() {
 
   const unorganizedFiles = recentFiles.filter((f: any) => !f.collectionId);
 
+  const basicFields = ['preferredName', 'dob', 'gender', 'phone'];
+  const academicFields = ['studentId', 'university', 'course'];
+  const emergencyFields = ['emergencyName', 'emergencyPhone'];
+  const additionalFields = ['bloodGroup', 'nationality', 'currentAddress'];
+
+  const isBasicComplete = profileData ? basicFields.every(f => profileData[f] && profileData[f].trim() !== '') : false;
+  const isAcademicComplete = profileData ? academicFields.every(f => profileData[f] && profileData[f].trim() !== '') : false;
+  const isEmergencyComplete = profileData ? emergencyFields.every(f => profileData[f] && profileData[f].trim() !== '') : false;
+  const isAdditionalComplete = profileData ? additionalFields.some(f => profileData[f] && profileData[f].trim() !== '') : false;
+
+  const totalFields = [...basicFields, ...academicFields, ...emergencyFields, ...additionalFields];
+  const filledFields = totalFields.filter(f => profileData?.[f] && profileData[f].trim() !== '').length;
+  const profileCompletionPercentage = totalFields.length > 0 ? Math.round((filledFields / totalFields.length) * 100) : 0;
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       
@@ -550,7 +597,7 @@ export default function Dashboard() {
               onClick={() => {
                  import('firebase/auth').then(({ signOut }) => signOut(auth));
               }}
-              className="p-2 text-slate-400 hover:text-red-400 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"
               title="Sign Out"
             >
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -691,17 +738,17 @@ export default function Dashboard() {
                             <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                          <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
-                          <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={20} /></button>
-                                <HeartButton className="scale-100 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
-                                <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={20} /></button>
+                        <div className="hidden md:flex items-center gap-1">
+                          <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                          <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
+                          <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={18} /></button>
+                                <HeartButton className="scale-90 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                                <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={18} /></button>
                         </div>
                         {/* Mobile visible menu button */}
                         <div className="md:hidden flex gap-1">
-                           <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                           <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
+                           <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                           <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
                         </div>
                       </div>
                     ))}
@@ -752,34 +799,34 @@ export default function Dashboard() {
                 <div className="mb-4">
                   <div className="flex justify-between text-xs font-medium mb-2">
                     <span className="text-slate-700">Completion</span>
-                    <span className="text-blue-600">72%</span>
+                    <span className="text-blue-600">{profileCompletionPercentage}%</span>
                   </div>
                   <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-600 rounded-full w-[72%]"></div>
+                    <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${profileCompletionPercentage}%` }}></div>
                   </div>
                 </div>
 
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700">Basic Information</span>
-                    <CheckCircle2 size={16} className="text-green-500" />
+                    <span className={isBasicComplete ? "text-slate-700" : "text-slate-500"}>Basic Information</span>
+                    {isBasicComplete ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-slate-200" />}
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700">Academic Information</span>
-                    <CheckCircle2 size={16} className="text-green-500" />
+                    <span className={isAcademicComplete ? "text-slate-700" : "text-slate-500"}>Academic Information</span>
+                    {isAcademicComplete ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-slate-200" />}
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Emergency Contact</span>
-                    <div className="w-4 h-4 rounded-full border-2 border-slate-200"></div>
+                    <span className={isEmergencyComplete ? "text-slate-700" : "text-slate-500"}>Emergency Contact</span>
+                    {isEmergencyComplete ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-slate-200" />}
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Additional Details</span>
-                    <div className="w-4 h-4 rounded-full border-2 border-slate-200"></div>
+                    <span className={isAdditionalComplete ? "text-slate-700" : "text-slate-500"}>Additional Details</span>
+                    {isAdditionalComplete ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-slate-200" />}
                   </li>
                 </ul>
 
-                <button className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-medium rounded-xl border border-slate-200 transition-colors active:scale-95">
-                  Complete Profile
+                <button onClick={() => setActiveTab('Personal Info')} className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-medium rounded-xl border border-slate-200 transition-colors active:scale-95">
+                  {profileCompletionPercentage === 100 ? "View Profile" : "Complete Profile"}
                 </button>
               </div>
 
@@ -811,19 +858,6 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* RECENT ACTIVITY */}
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-4 uppercase tracking-wider flex items-center gap-2">
-                  <Activity size={16}/> Recent activity
-                </h3>
-                <div className="space-y-4">
-                  <ActivityItem text="You uploaded Resume.pdf" time="Today, 10:32 AM" />
-                  <ActivityItem text="You added College ID to Essentials" time="Yesterday" />
-                  <ActivityItem text="You created 'Internship Documents'" time="Yesterday" />
-                  <ActivityItem text="You downloaded Marksheet.pdf" time="2 days ago" />
-                </div>
-              </div>
-
             </div>
           </div>
           </div>
@@ -842,6 +876,28 @@ export default function Dashboard() {
                <div className="mt-12 bg-white rounded-[32px] border border-slate-100 shadow-sm py-12">
                  <EmptyState />
                </div>
+            ) : defaultFolderView === 'grid' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {getFilteredAndSortedFiles(unorganizedFiles).map((file, i) => (
+                  <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-blue-100 transition-all group cursor-pointer flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
+                    <div className="w-full h-28 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-blue-400 group-hover:bg-blue-50/50 group-hover:scale-105 transition-all duration-300">
+                      <FileText size={36} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <h4 className="font-semibold text-sm text-slate-800 truncate mb-1 group-hover:text-blue-600 transition-colors" title={file.name}>{file.name}</h4>
+                      <p className="text-xs text-slate-500 mt-auto">{(file.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1 bg-white/95 backdrop-blur rounded-xl p-1 shadow-sm border border-slate-100 z-10">
+                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={16} /></button>
+                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={16} /></button>
+                      <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => { e.stopPropagation(); handleDeleteFile(e, file); }}><Trash2 size={16} /></button>
+                    </div>
+                    <div className="absolute top-2 left-2 z-10" onClick={e => e.stopPropagation()}>
+                       <HeartButton className="scale-75 origin-top-left" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
@@ -857,15 +913,15 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="hidden md:flex items-center gap-1">
-                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
-                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={20} /></button>
-                        <HeartButton className="scale-100 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
-                        <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={20} /></button>
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={18} /></button>
+                        <HeartButton className="scale-90 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                        <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={18} /></button>
                       </div>
                       <div className="md:hidden flex gap-1">
-                         <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                         <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
+                         <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                         <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
                       </div>
                     </div>
                   ))}
@@ -961,7 +1017,7 @@ export default function Dashboard() {
                  <>
                    <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                      <div className="flex items-center gap-4">
-                       <button onClick={() => setActiveTab('Collections')} className="p-2 text-slate-400 hover:text-slate-700 bg-slate-50 shadow-sm border border-slate-100 hover:bg-slate-100 rounded-xl transition-colors"><ChevronLeft size={20}/></button>
+                       <button onClick={() => setActiveTab('Collections')} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-50 shadow-sm border border-slate-100 hover:bg-slate-100 rounded-xl transition-colors"><ChevronLeft size={20}/></button>
                        <div>
                          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">{col?.name || 'Collection'}</h2>
                          <p className="text-sm text-slate-500">{collectionFiles.length} items</p>
@@ -1001,15 +1057,15 @@ export default function Dashboard() {
                                </div>
                              </div>
                              <div className="hidden md:flex items-center gap-1">
-                               <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                               <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
-                               <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={20} /></button>
-                               <HeartButton className="scale-100 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
-                               <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={20} /></button>
+                               <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                               <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
+                               <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={18} /></button>
+                               <HeartButton className="scale-90 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                               <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={18} /></button>
                              </div>
                              <div className="md:hidden flex gap-1">
-                                <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                                <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
+                                <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                                <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
                              </div>
                            </div>
                          ))}
@@ -1052,14 +1108,14 @@ export default function Dashboard() {
                          file.type?.includes('image') ? <FileBadge size={24}/> :
                          <File size={24}/>}
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
-                        <button className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Share" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={20} /></button>
-                        <HeartButton className="scale-100 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
-                        <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={20} /></button>
+                      <div className="hidden md:flex items-center gap-1">
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                        <button className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Share" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
+                        <HeartButton className="scale-90 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                        <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={18} /></button>
                       </div>
                       <div className="md:hidden flex gap-1">
-                        <button className="p-2 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={20} /></button>
+                        <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
                       </div>
                     </div>
                     <h3 className="font-semibold text-slate-900 truncate mb-1">{file.name}</h3>
@@ -1085,7 +1141,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
                 <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">2-Step Verification (OTP)</h3>
@@ -1094,7 +1150,7 @@ export default function Dashboard() {
                   
                   <button 
                     onClick={toggleTwoStep}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${twoStepEnabled ? 'bg-blue-600' : 'bg-slate-200'}`}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${twoStepEnabled ? 'bg-blue-600' : 'bg-slate-200'}`}
                   >
                     <span className="sr-only">Toggle 2-Step Verification</span>
                     <span
@@ -1107,7 +1163,209 @@ export default function Dashboard() {
                   {twoStepEnabled ? "Your account is currently protected by 2-step verification." : "We highly recommend enabling 2-step verification for maximum security."}
                 </div>
               </div>
+
+              {/* Login Alerts */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
+                <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 mt-1">
+                      <Bell size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 mb-1">Unrecognized Login Alerts</h3>
+                      <p className="text-sm text-slate-600 max-w-lg">Get instantly notified via email if anyone logs into your account from a new device or unfamiliar location.</p>
+                    </div>
+                  </div>
+                  <button onClick={() => showToast('Success', 'Login alerts have been enabled', 'success')} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-orange-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shadow-sm">
+                    Enable Alerts
+                  </button>
+                </div>
+                <div className="p-4 bg-white text-sm text-slate-500">
+                  Status: Currently disabled for this account
+                </div>
+              </div>
+
+              {/* Account Recovery */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-1">
+                      <Shield size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 mb-1">Account Recovery</h3>
+                      <p className="text-sm text-slate-600 max-w-lg">Set up backup methods so you can regain access to your account if you ever forget your password.</p>
+                    </div>
+                  </div>
+                  <button onClick={() => showToast('Info', 'Manage recovery options', 'success')} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-purple-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shadow-sm">
+                    Manage Methods
+                  </button>
+                </div>
+                <div className="p-4 bg-white flex flex-col gap-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500">Recovery Email</span>
+                    <span className="font-medium text-slate-900">{user?.email || "Not set"}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500">Recovery Phone</span>
+                    <span className="font-medium text-slate-400 italic">Not configured</span>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        ) : activeTab === 'Settings' ? (
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-100 shadow-sm mb-6">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center">
+                  <Settings size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Application Settings</h2>
+                  <p className="text-sm text-slate-500">Manage your general application preferences</p>
+                </div>
+              </div>
+
+              {/* Email Notifications */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
+                <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-1">
+                      <Bell size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 mb-1">Email Notifications</h3>
+                      <p className="text-sm text-slate-600 max-w-lg">Receive weekly summaries of your storage usage and important updates about your Smart Locker.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={toggleEmailNotifications}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${emailNotificationsEnabled ? 'bg-blue-600' : 'bg-slate-200'}`}
+                  >
+                    <span className="sr-only">Toggle Notifications</span>
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${emailNotificationsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Storage Management */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
+                <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 mt-1">
+                      <Folder size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 mb-1">Storage Management</h3>
+                      <p className="text-sm text-slate-600 max-w-lg">View your current storage usage across all your files and collections.</p>
+                    </div>
+                  </div>
+                  <button onClick={() => showToast('Info', 'Upgrade options coming soon', 'success')} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors whitespace-nowrap">
+                    Upgrade Plan
+                  </button>
+                </div>
+                <div className="p-6 bg-white flex flex-col gap-3">
+                  <div className="flex justify-between items-center text-sm mb-1">
+                    <span className="font-semibold text-slate-700">12.4 GB <span className="font-normal text-slate-500">used of 15 GB</span></span>
+                    <span className="text-slate-500">82%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                    <div className="bg-purple-500 h-2.5 rounded-full" style={{ width: '82%' }}></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Default View */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-1">
+                      <LayoutList size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 mb-1">Default Folder View</h3>
+                      <p className="text-sm text-slate-600 max-w-lg">Choose how you want your documents and collections to be displayed by default.</p>
+                    </div>
+                  </div>
+                  <div className="flex bg-slate-200/50 p-1 rounded-lg">
+                    <button onClick={() => changeDefaultView('list')} className={`${defaultFolderView === 'list' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'} px-4 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors`}><LayoutList size={14}/> List</button>
+                    <button onClick={() => changeDefaultView('grid')} className={`${defaultFolderView === 'grid' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'} px-4 py-1.5 rounded-md text-sm font-medium transition-colors`}>Grid</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : activeTab === 'Recent' ? (
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                <Clock size={24} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Recent Documents</h2>
+                <p className="text-slate-500 text-sm">Your most recently uploaded or accessed files.</p>
+              </div>
+            </div>
+            
+            {recentFiles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-500">
+                <Clock size={48} className="text-slate-200 mb-4" />
+                <h3 className="text-xl font-bold text-slate-900 mb-2">No recent files</h3>
+                <p className="text-slate-500">Upload some documents to see them here.</p>
+              </div>
+            ) : defaultFolderView === 'grid' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {[...recentFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file, i) => (
+                  <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-blue-100 transition-all group cursor-pointer flex flex-col relative animate-in fade-in zoom-in-95 duration-200">
+                    <div className="w-full h-28 bg-slate-50 rounded-xl mb-4 flex items-center justify-center text-blue-400 group-hover:bg-blue-50/50 group-hover:scale-105 transition-all duration-300">
+                      <FileText size={36} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <h4 className="font-semibold text-sm text-slate-800 truncate mb-1 group-hover:text-blue-600 transition-colors" title={file.name}>{file.name}</h4>
+                      <p className="text-xs text-slate-500 mt-auto">{(file.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1 bg-white/95 backdrop-blur rounded-xl p-1 shadow-sm border border-slate-100 z-10">
+                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={16} /></button>
+                      <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={16} /></button>
+                      <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => { e.stopPropagation(); handleDeleteFile(e, file); }}><Trash2 size={16} /></button>
+                    </div>
+                    <div className="absolute top-2 left-2 z-10" onClick={e => e.stopPropagation()}>
+                       <HeartButton className="scale-75 origin-top-left" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+                <div className="divide-y divide-slate-100">
+                  {[...recentFiles].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20).map((file: any, i: number) => (
+                    <div key={i} onClick={() => window.open(file.download_url || file.url, '_blank')} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-blue-500 bg-blue-50">
+                          <FileText size={18}/>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm text-slate-800">{file.name}</h4>
+                          <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB • {new Date(file.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="hidden md:flex items-center gap-1">
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Document" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Share Links" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
+                        <button className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Download" onClick={(e) => { e.stopPropagation(); window.open(file.download_url || file.url, '_blank'); }}><Download size={18} /></button>
+                        <HeartButton className="scale-90 origin-center -mx-1" isFavorite={file.isFavorite || false} onToggle={(e) => handleToggleFavorite(e, file)} />
+                        <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete" onClick={(e) => handleDeleteFile(e, file)}><Trash2 size={18} /></button>
+                      </div>
+                      <div className="md:hidden flex gap-1">
+                         <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setViewFile(file); }}><Eye size={18} /></button>
+                         <button className="p-1.5 text-slate-400" onClick={(e) => { e.stopPropagation(); setShareFile(file); }}><Share2 size={18} /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-300 min-h-[60vh]">
@@ -1358,7 +1616,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-[24px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
               <h3 className="font-bold text-xl text-slate-900">Upload File</h3>
-              <button onClick={() => !isUploading && setIsUploadModalOpen(false)} disabled={isUploading} className="p-2 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50">
+              <button onClick={() => !isUploading && setIsUploadModalOpen(false)} disabled={isUploading} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50">
                 <Minus size={20} />
               </button>
             </div>
