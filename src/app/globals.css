@@ -561,3 +561,40 @@ button {
 @keyframes nodoc-ring { 0%, 52% { opacity: 0; scale: .5; } 53% { opacity: .6; scale: .6; } 62%, 100% { opacity: 0; scale: 1.8; } }
 
 @media (prefers-reduced-motion: reduce) { .nodoc-doc, .nodoc-mag, .nodoc-ring { display: none; } }
+/* ---------- Animated Toast Notifications ---------- */
+#toasts{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));right:20px;display:flex;flex-direction:column;gap:12px;z-index:9999;width:min(380px,calc(100vw - 40px))}
+.toast{--c:#10b981;position:relative;overflow:hidden;display:flex;gap:14px;align-items:flex-start;background:#fff;border-radius:20px;padding:18px 44px 20px 18px;box-shadow:0 18px 40px -12px rgba(20,26,42,.28),0 0 0 1px #e3e7ef;
+  animation:toast-in .7s cubic-bezier(.2,1.2,.3,1) both}
+.toast.out{animation:toast-out .45s cubic-bezier(.5,0,.8,.4) forwards}
+.toast.error{--c:#ef4444} .toast.info{--c:#4f7cff} .toast.warn{--c:#f59e0b} .toast.success{--c:#10b981}
+@keyframes toast-in{0%{opacity:0;transform:translateX(120%) scale(.9)}60%{opacity:1;transform:translateX(-6px) scale(1.01)}100%{transform:none}}
+@keyframes toast-out{to{opacity:0;transform:translateX(110%) scale(.92);max-height:0;margin-top:-12px;padding-block:0}}
+
+.icon{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;position:relative;color:var(--c)}
+.icon::before{content:"";position:absolute;inset:0;border-radius:50%;background:color-mix(in srgb,var(--c) 14%,transparent);animation:pop .6s .15s cubic-bezier(.3,1.6,.5,1) both}
+.icon::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--c);animation:ring 1s .35s ease-out both}
+.icon svg{position:relative;width:34px;height:34px;overflow:visible}
+.icon circle{fill:none;stroke:currentColor;stroke-width:2.2;stroke-dasharray:101;stroke-dashoffset:101;stroke-linecap:round;transform-origin:center;transform:rotate(-90deg);animation:draw .6s .2s ease-out forwards}
+.icon .mark{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .4s .65s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.9);opacity:0}}
+
+.body{min-width:0; text-align:left;}
+.title{font-weight:700;font-size:1.02rem;line-height:1.3;animation:txt .5s .3s both; color: #141a2a;}
+.msg{color:#5b6478;font-size:.93rem;line-height:1.45;margin-top:4px;animation:txt .5s .4s both}
+@keyframes txt{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.close{position:absolute;top:14px;right:14px;width:26px;height:26px;border:0;border-radius:8px;background:none;color:#5b6478;cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .3s}
+.close:hover{background:#e3e7ef;transform:rotate(90deg)}
+.close:focus-visible{outline:2px solid #4f7cff}
+
+.bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--c);transform-origin:left;animation:bar var(--d,4s) linear forwards;opacity:.85}
+.toast:hover .bar{animation-play-state:paused}
+@keyframes bar{to{transform:scaleX(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .toast,.toast *{animation-duration:.01s!important;animation-delay:0s!important}
+  .bar{animation:none}
+}
+@media (max-width:480px){#toasts{right:20px;left:20px;width:auto}}

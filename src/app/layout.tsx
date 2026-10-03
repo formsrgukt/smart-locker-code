@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "Keep your documents, certificates, academic records, and personal information organized in one secure locker.",
 };
 
+import { ToastProvider } from "@/components/ToastProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lexend.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
+import { useToast } from '@/components/ToastProvider';
 import Link from 'next/link';
 import { 
   Lock, Home, FileText, User, Folder, Heart, Clock, Trash2, 
@@ -94,7 +95,9 @@ export default function Dashboard() {
   const [recentFiles, setRecentFiles] = useState<any[]>([]);
   const [shareFile, setShareFile] = useState<any | null>(null);
   const [viewFile, setViewFile] = useState<any | null>(null);
-  const [toast, setToast] = useState<{message: string, description?: string, type?: 'success' | 'error', isHiding?: boolean} | null>(null);
+  
+  const { showToast } = useToast();
+  
   const [deleteConfirmFile, setDeleteConfirmFile] = useState<any | null>(null);
   const [deleteConfirmCollection, setDeleteConfirmCollection] = useState<any | null>(null);
   const [deleteCollectionInput, setDeleteCollectionInput] = useState('');
@@ -206,20 +209,6 @@ export default function Dashboard() {
       console.error(e);
       showToast('Error', 'Failed to update preferences', 'error');
     }
-  };
-
-  const showToast = (message: string, description?: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, description, type, isHiding: false });
-    setTimeout(() => {
-      closeToast();
-    }, 3700);
-  };
-
-  const closeToast = () => {
-    setToast(prev => prev ? { ...prev, isHiding: true } : null);
-    setTimeout(() => {
-      setToast(prev => prev?.isHiding ? null : prev);
-    }, 300);
   };
 
   useEffect(() => {
@@ -1214,7 +1203,7 @@ export default function Dashboard() {
             </div>
           </div>
         ) : activeTab === 'Personal Info' ? (
-          <PersonalInfoView user={user} showToast={showToast} setGlobalProfileData={setProfileData} />
+          <PersonalInfoView user={user} setGlobalProfileData={setProfileData} />
         ) : activeTab === 'Collections' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -2091,29 +2080,7 @@ export default function Dashboard() {
       )}
 
 
-      {/* TOAST NOTIFICATION */}
-      {toast && (
-        <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 px-6 py-4 rounded-2xl shadow-2xl border z-50 flex items-start gap-4 max-w-sm
-          ${toast.isHiding ? 'animate-toast-exit' : 'animate-toast-enter'}
-          ${toast.type === 'error' 
-            ? 'bg-red-600 dark:bg-red-500 border-red-700 dark:border-red-400 text-white' 
-            : 'bg-slate-900 dark:bg-white border-slate-800 dark:border-slate-100 text-white dark:text-slate-900'}`}>
-          <div className="shrink-0 mt-0.5">
-            {toast.type === 'error' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white animate-tick-pop"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            ) : (
-              <CheckCircle2 size={24} className={`animate-tick-pop ${toast.type === 'error' ? '' : 'text-emerald-400 dark:text-emerald-500'}`} />
-            )}
-          </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-sm">{toast.message}</h4>
-            {toast.description && <p className={`text-xs mt-1 leading-relaxed ${toast.type === 'error' ? 'text-red-100' : 'text-slate-300 dark:text-slate-600'}`}>{toast.description}</p>}
-          </div>
-          <button onClick={closeToast} className={`transition-colors ${toast.type === 'error' ? 'text-red-200 hover:text-white' : 'text-slate-400 hover:text-white dark:text-slate-400 dark:hover:text-slate-900'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-      )}
+
 
       {/* MOBILE FLOATING ACTION BUTTON */}
       <button className="md:hidden fixed bottom-24 right-4 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl flex items-center justify-center active:scale-95 transition-transform z-30 border border-blue-500">

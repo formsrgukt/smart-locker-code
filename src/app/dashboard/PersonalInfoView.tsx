@@ -9,10 +9,10 @@ import {
 } from 'lucide-react';
 import CustomCalendar from '@/components/CustomCalendar';
 import CustomSelect from '@/components/CustomSelect';
+import { useToast } from '@/components/ToastProvider';
 
 interface PersonalInfoViewProps {
   user: FirebaseUser | null;
-  showToast: (msg: string, desc?: string, type?: 'success' | 'error') => void;
   setGlobalProfileData?: (data: any) => void;
 }
 
@@ -90,7 +90,8 @@ const MaskedId = ({ label, field, verified, isEditing, value, onChange }: { labe
   );
 };
 
-export default function PersonalInfoView({ user, showToast, setGlobalProfileData }: PersonalInfoViewProps) {
+export default function PersonalInfoView({ user, setGlobalProfileData }: PersonalInfoViewProps) {
+  const { showToast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
