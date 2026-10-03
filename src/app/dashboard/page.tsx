@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic';
 import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where, doc, deleteDoc, updateDoc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import HeartButton from '@/components/HeartButton';
+import AnimatedGreeting from '@/components/AnimatedGreeting';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import SecureLoader from '@/components/SecureLoader';
@@ -790,10 +791,7 @@ export default function Dashboard() {
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           
           {/* Greeting */}
-          <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-200">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">{getGreeting()}, {user?.displayName?.split(' ')[0] || 'User'}.</h1>
-            <p className="text-slate-500">Everything important, right where you need it.</p>
-          </div>
+          <AnimatedGreeting name={user?.displayName?.split(' ')[0] || 'User'} photoUrl={user?.photoURL} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
