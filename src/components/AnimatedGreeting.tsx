@@ -7,18 +7,38 @@ interface AnimatedGreetingProps {
 
 export default function AnimatedGreeting({ name, photoUrl }: AnimatedGreetingProps) {
   const [greeting, setGreeting] = useState('');
+  const [hasAnimated, setHasAnimated] = useState(false);
   
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
+    
+    if (typeof window !== 'undefined') {
+      if (sessionStorage.getItem('greetingAnimated')) {
+        setHasAnimated(true);
+      } else {
+        sessionStorage.setItem('greetingAnimated', 'true');
+      }
+    }
   }, []);
 
   if (!greeting) return null; // Avoid hydration mismatch
 
   // Split strings into characters for animation
   const renderWord = (text: string, isName: boolean = false, startIndex: number = 0) => {
+    if (isName) {
+      return (
+        <span 
+          className="greet-w greet-ch" 
+          style={{ '--i': startIndex } as React.CSSProperties}
+          aria-hidden="true"
+        >
+          <span className="greet-name">{text}</span>
+        </span>
+      );
+    }
     return (
-      <span className={`greet-w ${isName ? 'greet-name' : ''}`} aria-hidden="true">
+      <span className="greet-w" aria-hidden="true">
         {text.split('').map((char, index) => (
           <span 
             key={index} 
@@ -36,38 +56,26 @@ export default function AnimatedGreeting({ name, photoUrl }: AnimatedGreetingPro
   
   return (
     <section className="greet-card" aria-live="polite">
-      <div className="greet-avatar" aria-hidden="true">
-        <div className="greet-in">
-          <span className="greet-pulse"></span>
-          <span className="greet-pulse p2"></span>
-          <div className="greet-ring"></div>
-          <div className="greet-face">
-            {photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoUrl} alt="" />
-            ) : (
-              <svg className="greet-ui" viewBox="0 0 24 24">
-                <defs>
-                  <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#6c8cff"/>
-                    <stop offset="1" stopColor="#3fcfa6"/>
-                  </linearGradient>
-                </defs>
-                <circle className="greet-head" cx="12" cy="8" r="4" pathLength="1"/>
-                <path className="greet-body" d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" pathLength="1"/>
-              </svg>
-            )}
-          </div>
-          <span className="greet-status"></span>
-        </div>
-      </div>
+
       <div className="greet-content">
-        <h1 aria-label={`${greeting}, ${name}.`}>
-          {renderWord(greetingStr, false, 0)}
-          {renderWord(name, true, greetingStr.length)}
-          <span className="greet-dot" aria-hidden="true"></span>
+        <h1 aria-label={`${greeting}, ${name}`}>
+          {hasAnimated ? (
+            <>
+              {greetingStr}<span className="greet-name">{name}</span>
+            </>
+          ) : (
+            <>
+              {renderWord(greetingStr, false, 0)}
+              {renderWord(name, true, greetingStr.length)}
+            </>
+          )}
         </h1>
-        <p className="greet-sub">Everything important, right where you need it.</p>
+        <p 
+          className="greet-sub"
+          style={hasAnimated ? { animation: 'none', opacity: 1, clipPath: 'none' } : undefined}
+        >
+          Everything important, right where you need it.
+        </p>
       </div>
     </section>
   );

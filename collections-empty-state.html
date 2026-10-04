@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+    --out: cubic-bezier(.16, 1, .3, 1);
+    --blue: #155dfc;
+    --ink: #0f172a;
+    --text: #64748b;
+    --T: 9s;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; min-height: 100vh; font-family: Lexend, Inter, "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #f9fafc; }
+
+  /* fixed-size frame so the cursor path is exact; scaled down on small screens by the script */
+  .app { position: relative; width: 920px; height: 330px; margin: 0 auto; }
+  .app > * { position: absolute; }
+  .app svg { display: block; }
+
+  /* ---------- header card ---------- */
+  .head {
+    left: 0; right: 0; top: 0; height: 78px; padding: 0 30px 0 32px; border-radius: 24px; z-index: 1;
+    background: #fff; border: 1px solid #eef1f6; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 10px 26px -18px rgba(40,60,140,.2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .head h1 { margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -.01em; }
+  .tools { display: flex; align-items: center; gap: 15px; }
+  .lib { width: 50px; height: 50px; border-radius: 14px; background: #eef4ff; display: grid; place-items: center; }
+  .lib svg { width: 22px; height: 22px; fill: none; stroke: #2f7bf5; stroke-width: 2; stroke-linecap: round; }
+  .nb {
+    position: relative; overflow: hidden; width: 201px; height: 46px; border-radius: 14px; border: 0; background: var(--blue); color: #fff;
+    font: 600 16px Lexend, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 10px 20px -10px rgba(21,93,252,.7); animation: nbtn var(--T) infinite;
+  }
+  .nb svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+  .nb::after { content: ""; position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: rgba(255,255,255,.45); opacity: 0; animation: nbRipple var(--T) ease-out infinite; }
+  @keyframes nbtn {
+    0%, 16.9% { transform: scale(1); background-color: #155dfc; }
+    17.8%     { transform: scale(.94); background-color: #0f49d0; }
+    19.5%, 100% { transform: scale(1); background-color: #155dfc; }
+  }
+  @keyframes nbRipple { 0%, 17.7% { opacity: 0; scale: .2; } 18% { opacity: .6; scale: .3; } 23%, 100% { opacity: 0; scale: 3.4; } }
+
+  /* ---------- panel ---------- */
+  .panel {
+    left: 0; right: 0; top: 110px; height: 200px; border-radius: 34px; z-index: 1;
+    background: #fff; border: 1px solid #eef1f6; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 30px -18px rgba(40,60,140,.18);
+  }
+  .empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 22px; animation: empty var(--T) infinite; }
+  @keyframes empty {
+    0%, 64% { opacity: 1; transform: none; }
+    68%, 91% { opacity: 0; transform: scale(.94); }
+    97%, 100% { opacity: 1; transform: none; }
+  }
+  .disc { width: 80px; height: 80px; border-radius: 50%; background: #f4f7fb; display: grid; place-items: center; }
+  .disc svg { width: 36px; height: 36px; fill: none; stroke: #cbd5e1; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .empty p { margin: 0; font-size: 18px; font-weight: 600; color: var(--text); }
+
+  /* the collection that gets created */
+  .col {
+    position: absolute; left: 28px; top: 28px; width: 168px; height: 140px; padding: 18px; border-radius: 20px;
+    background: #fff; border: 1px solid #e6ecf6; box-shadow: 0 14px 28px -16px rgba(30,41,90,.35);
+    display: grid; align-content: space-between; opacity: 0; animation: col var(--T) infinite;
+  }
+  @keyframes col {
+    0%, 68%  { opacity: 0; transform: translateY(16px) scale(.6); }
+    70%      { opacity: 1; transform: translateY(-4px) scale(1.08); }
+    72%      { transform: translateY(0) scale(.97); }
+    73.5%, 88% { opacity: 1; transform: none; }
+    93%, 100% { opacity: 0; transform: translateY(10px) scale(.92); }
+  }
+  .col .tile { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: linear-gradient(145deg, #e8f0ff, #dbe7ff); }
+  .col .tile svg { width: 26px; height: 26px; fill: rgba(21,93,252,.14); stroke: var(--blue); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .col b { display: block; font-size: 15px; font-weight: 600; }
+  .col small { display: block; margin-top: 2px; font-size: 12px; color: #94a3b8; font-weight: 500; }
+  .col .ok {
+    position: absolute; right: 12px; top: 12px; width: 22px; height: 22px; border-radius: 50%; background: #22c55e; display: grid; place-items: center;
+    scale: 0; animation: okPop var(--T) infinite;
+  }
+  .col .ok svg { width: 12px; height: 12px; fill: none; stroke: #fff; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+  @keyframes okPop { 0%, 71% { scale: 0; opacity: 1; } 73% { scale: 1.2; } 74.5%, 86% { scale: 1; opacity: 1; } 90%, 100% { scale: .8; opacity: 0; } }
+
+  /* effects at the card centre (112, 208) */
+  .fx { left: 112px; top: 208px; width: 0; height: 0; z-index: 5; }
+  .fx > * { position: absolute; }
+  .ring { left: -84px; top: -70px; width: 168px; height: 140px; border-radius: 24px; border: 3px solid #93c5fd; opacity: 0; animation: ring var(--T) ease-out infinite; }
+  @keyframes ring { 0%, 68% { opacity: 0; scale: .6; } 69% { opacity: .8; scale: .7; } 80%, 100% { opacity: 0; scale: 1.5; } }
+  .sp { left: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: #60a5fa; opacity: 0; animation: spark var(--T) ease-out infinite; }
+  .sp:nth-child(3n+2) { background: #fbbf24; width: 6px; height: 6px; }
+  .sp:nth-child(3n) { background: #a78bfa; }
+  @keyframes spark { 0%, 68.5% { opacity: 0; translate: 0 0; scale: .3; } 70% { opacity: 1; } 83%, 100% { opacity: 0; translate: var(--x) var(--y); scale: 1; } }
+
+  /* toast */
+  .toast {
+    right: 30px; top: 92px; z-index: 20; height: 36px; padding: 0 16px 0 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: #15803d; background: #ecfdf3; border: 1px solid #bbf7d0; box-shadow: 0 10px 20px -10px rgba(22,163,74,.5);
+    opacity: 0; animation: toast var(--T) infinite;
+  }
+  .toast i { width: 20px; height: 20px; border-radius: 50%; background: #22c55e; display: grid; place-items: center; }
+  .toast svg { width: 11px; height: 11px; fill: none; stroke: #fff; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+  @keyframes toast {
+    0%, 68.5% { opacity: 0; transform: translateY(-12px) scale(.95); }
+    71%, 84%  { opacity: 1; transform: none; }
+    88%, 100% { opacity: 0; transform: translateY(-8px); }
+  }
+
+  /* ---------- modal ---------- */
+  .dim { inset: -20px; z-index: 10; border-radius: 36px; background: rgba(15,23,42,.32); backdrop-filter: blur(1.5px); opacity: 0; pointer-events: none; animation: dim var(--T) infinite; }
+  @keyframes dim { 0%, 18.5% { opacity: 0; } 20.5%, 65% { opacity: 1; } 68%, 100% { opacity: 0; } }
+  .modal {
+    left: 260px; top: 92px; width: 400px; height: 222px; padding: 24px; z-index: 11; border-radius: 24px; background: #fff;
+    box-shadow: 0 30px 60px -20px rgba(15,23,42,.45); opacity: 0; animation: modal var(--T) infinite;
+  }
+  @keyframes modal {
+    0%, 18.9% { opacity: 0; transform: translateY(24px) scale(.92); animation-timing-function: cubic-bezier(.34,1.56,.64,1); }
+    22.5%, 65% { opacity: 1; transform: none; animation-timing-function: ease-in; }
+    68%, 100% { opacity: 0; transform: translateY(10px) scale(.96); }
+  }
+  .modal h3 { margin: 0; font-size: 20px; line-height: 24px; font-weight: 700; }
+  .modal label { display: block; margin-top: 14px; font-size: 13px; line-height: 16px; font-weight: 500; color: var(--text); }
+  .input {
+    position: relative; margin-top: 8px; height: 46px; padding: 0 14px; border-radius: 12px; border: 2px solid #dbe2f3; display: flex; align-items: center;
+    font-size: 15px; font-weight: 500; animation: focus var(--T) infinite;
+  }
+  @keyframes focus {
+    0%, 24%  { border-color: #dbe2f3; box-shadow: 0 0 0 0 rgba(21,93,252,0); }
+    25.5%, 62% { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(21,93,252,.12); }
+    65%, 100% { border-color: #dbe2f3; box-shadow: 0 0 0 0 rgba(21,93,252,0); }
+  }
+  .input .ph { position: absolute; left: 14px; color: #94a3b8; font-weight: 400; animation: ph var(--T) infinite; }
+  @keyframes ph { 0%, 26.5% { opacity: 1; } 27%, 100% { opacity: 0; } }
+  .typed { position: relative; display: inline-block; }
+  .txt { display: inline-block; white-space: nowrap; clip-path: inset(0 100% 0 0); animation: reveal var(--T) infinite; }
+  @keyframes reveal { 0%, 26.7% { clip-path: inset(0 100% 0 0); animation-timing-function: steps(16, end); } 44.4%, 100% { clip-path: inset(0 0 0 0); } }
+  .caret { position: absolute; top: 50%; left: 0; width: 2px; height: 20px; margin-top: -10px; opacity: 0; animation: caretMove var(--T) infinite; }
+  .caret::after { content: ""; display: block; width: 2px; height: 100%; border-radius: 1px; background: var(--blue); animation: blink .9s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes caretMove {
+    0%, 25.5% { opacity: 0; left: 0; }
+    26.7%     { opacity: 1; left: 0; animation-timing-function: steps(16, end); }
+    44.4%, 62.5% { opacity: 1; left: 100%; }
+    63%, 100% { opacity: 0; left: 100%; }
+  }
+
+  .actions { position: absolute; right: 24px; bottom: 24px; display: flex; gap: 10px; }
+  .actions .cancel { width: 90px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 14px; font-weight: 600; color: var(--text); background: #f1f5f9; }
+  .actions .create {
+    position: relative; width: 104px; height: 42px; border-radius: 12px; display: grid; place-items: center; overflow: hidden;
+    font-size: 14px; font-weight: 600; color: #fff; background: var(--blue); animation: createBtn var(--T) infinite;
+  }
+  .create span { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: 6px; opacity: 0; }
+  .create .c1 { opacity: 1; animation: cA var(--T) infinite; }
+  .create .c2 { animation: cB var(--T) infinite; }
+  .create .c3 { animation: cC var(--T) infinite; }
+  .create svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .create .mini { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: spin .8s linear infinite !important; }
+  @keyframes spin { to { rotate: 360deg; } }
+  @keyframes createBtn {
+    0%, 56.5% { transform: scale(1); background-color: #155dfc; }
+    57%       { transform: scale(.94); background-color: #0f49d0; }
+    58.5%, 62.5% { transform: scale(1); background-color: #155dfc; }
+    64%, 100% { transform: scale(1); background-color: #16a34a; }
+  }
+  @keyframes cA { 0%, 56.5% { opacity: 1; transform: none; } 58.5%, 100% { opacity: 0; transform: translateY(-6px); } }
+  @keyframes cB { 0%, 58% { opacity: 0; transform: translateY(6px); } 60%, 61% { opacity: 1; transform: none; } 63%, 100% { opacity: 0; transform: translateY(-6px); } }
+  @keyframes cC { 0%, 61.5% { opacity: 0; transform: translateY(6px); } 63.5%, 100% { opacity: 1; transform: none; } }
+
+  /* ---------- cursor ---------- */
+  .cursor { left: 0; top: 0; width: 22px; height: 22px; z-index: 30; opacity: 0; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(15,23,42,.35)); animation: cursor var(--T) infinite; }
+  .cursor svg { width: 100%; height: 100%; }
+  @keyframes cursor {
+    0%, 6.7% { opacity: 0; translate: 610px 330px; scale: 1; }
+    9%       { opacity: 1; translate: 600px 320px; animation-timing-function: cubic-bezier(.65,0,.35,1); }
+    16.7%    { opacity: 1; translate: 782px 42px; scale: 1; }
+    17.8%    { translate: 782px 42px; scale: .8; }
+    19.5%    { translate: 782px 42px; scale: 1; }
+    23%      { opacity: 1; translate: 788px 50px; }
+    26%, 46.7% { opacity: 0; translate: 800px 70px; }
+    46.8%    { opacity: 0; translate: 660px 350px; }
+    48.5%    { opacity: 1; translate: 650px 340px; animation-timing-function: cubic-bezier(.65,0,.35,1); }
+    55.6%    { opacity: 1; translate: 582px 268px; scale: 1; }
+    56.7%    { translate: 582px 268px; scale: .8; }
+    58.5%    { translate: 582px 268px; scale: 1; }
+    62%      { opacity: 1; translate: 590px 276px; }
+    65.6%, 100% { opacity: 0; translate: 620px 310px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- header -->
+  <div class="head">
+    <h1>Collections</h1>
+    <div class="tools">
+      <span class="lib"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v18M10 3v18M15 3v18M18.500 5l3 15"/></svg></span>
+      <button class="nb" type="button" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New Collection</button>
+    </div>
+  </div>
+
+  <!-- panel -->
+  <div class="panel">
+    <div class="empty">
+      <span class="disc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 002-2V8a2 2 0 00-2-2h-7.900a2 2 0 01-1.690-.9L9.600 3.900A2 2 0 007.930 3H4a2 2 0 00-2 2v13a2 2 0 002 2z"/></svg></span>
+      <p>No collections yet.</p>
+    </div>
+
+    <div class="col">
+      <span class="tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 002-2V8a2 2 0 00-2-2h-7.900a2 2 0 01-1.690-.9L9.600 3.900A2 2 0 007.930 3H4a2 2 0 00-2 2v13a2 2 0 002 2z"/></svg></span>
+      <div><b>Travel Documents</b><small>0 files</small></div>
+      <span class="ok"><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></span>
+    </div>
+  </div>
+
+  <!-- burst around the new collection -->
+  <div class="fx">
+    <div class="ring"></div>
+    <i class="sp" style="--x:-110px;--y:-40px"></i>
+    <i class="sp" style="--x:-96px;--y:56px"></i>
+    <i class="sp" style="--x:-30px;--y:-96px"></i>
+    <i class="sp" style="--x:40px;--y:-90px"></i>
+    <i class="sp" style="--x:104px;--y:-30px"></i>
+    <i class="sp" style="--x:98px;--y:58px"></i>
+    <i class="sp" style="--x:6px;--y:94px"></i>
+  </div>
+
+  <!-- toast -->
+  <div class="toast"><i><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></i>Collection created</div>
+
+  <!-- modal -->
+  <div class="dim"></div>
+  <div class="modal">
+    <h3>New collection</h3>
+    <label>Collection name</label>
+    <div class="input">
+      <span class="ph">Collection name</span>
+      <span class="typed"><span class="txt">Travel Documents</span><i class="caret"></i></span>
+    </div>
+    <div class="actions">
+      <span class="cancel">Cancel</span>
+      <span class="create">
+        <span class="c1">Create</span>
+        <span class="c2"><i class="mini"></i></span>
+        <span class="c3"><svg viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg>Created</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- cursor -->
+  <div class="cursor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l15 9.500-6.500 1.500 3.500 7-3 1.500-3.500-7L4 19.500z" fill="#0f172a" stroke="#fff" stroke-width="1.600" stroke-linejoin="round"/></svg></div>
+</div>
+
+<script>
+  // scale the fixed-size frame down on narrow screens
+  (function () {
+    var app = document.getElementById('app');
+    function fit() { app.style.zoom = Math.min(1, (window.innerWidth - 32) / 920); }
+    fit(); window.addEventListener('resize', fit);
+  })();
+</script>
+</body>
+</html>

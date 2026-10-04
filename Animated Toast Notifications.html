@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Animated Toast Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f6; --card:#fff; --text:#141a2a; --muted:#5b6478; --line:#e3e7ef;
+  --success:#10b981; --error:#ef4444; --info:#4f7cff; --warn:#f59e0b;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#1a2133;--text:#f2f5fb;--muted:#9aa5bd;--line:#2a3350}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#1a2133;--text:#f2f5fb;--muted:#9aa5bd;--line:#2a3350}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',system-ui,sans-serif;display:grid;place-items:center;padding:24px}
+.demo{text-align:center;max-width:420px}
+.demo h1{font-size:1.5rem;margin:0 0 6px}
+.demo p{color:var(--muted);margin:0 0 22px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btns button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 16px;border-radius:12px;cursor:pointer;transition:transform .15s}
+.btns button:active{transform:scale(.96)}
+.btns button:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+
+/* ---------- Toast ---------- */
+#toasts{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));right:20px;display:flex;flex-direction:column;gap:12px;z-index:99;width:min(380px,calc(100vw - 40px))}
+.toast{--c:var(--success);position:relative;overflow:hidden;display:flex;gap:14px;align-items:flex-start;background:var(--card);border-radius:20px;padding:18px 44px 20px 18px;box-shadow:0 18px 40px -12px rgba(20,26,42,.28),0 0 0 1px var(--line);
+  animation:in .7s cubic-bezier(.2,1.2,.3,1) both}
+.toast.out{animation:out .45s cubic-bezier(.5,0,.8,.4) forwards}
+.toast.error{--c:var(--error)} .toast.info{--c:var(--info)} .toast.warn{--c:var(--warn)}
+@keyframes in{0%{opacity:0;transform:translateX(120%) scale(.9)}60%{opacity:1;transform:translateX(-6px) scale(1.01)}100%{transform:none}}
+@keyframes out{to{opacity:0;transform:translateX(110%) scale(.92);max-height:0;margin-top:-12px;padding-block:0}}
+
+.icon{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;position:relative;color:var(--c)}
+.icon::before{content:"";position:absolute;inset:0;border-radius:50%;background:color-mix(in srgb,var(--c) 14%,transparent);animation:pop .6s .15s cubic-bezier(.3,1.6,.5,1) both}
+.icon::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--c);animation:ring 1s .35s ease-out both}
+.icon svg{position:relative;width:34px;height:34px;overflow:visible}
+.icon circle{fill:none;stroke:currentColor;stroke-width:2.2;stroke-dasharray:101;stroke-dashoffset:101;stroke-linecap:round;transform-origin:center;transform:rotate(-90deg);animation:draw .6s .2s ease-out forwards}
+.icon .mark{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .4s .65s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.9);opacity:0}}
+
+.body{min-width:0}
+.title{font-weight:700;font-size:1.02rem;line-height:1.3;animation:txt .5s .3s both}
+.msg{color:var(--muted);font-size:.93rem;line-height:1.45;margin-top:4px;animation:txt .5s .4s both}
+@keyframes txt{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.close{position:absolute;top:14px;right:14px;width:26px;height:26px;border:0;border-radius:8px;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .3s}
+.close:hover{background:var(--line);transform:rotate(90deg)}
+.close:focus-visible{outline:2px solid var(--info)}
+
+.bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:var(--c);transform-origin:left;animation:bar var(--d,4s) linear forwards;opacity:.85}
+.toast:hover .bar{animation-play-state:paused}
+@keyframes bar{to{transform:scaleX(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  .toast,.toast *{animation-duration:.01s!important;animation-delay:0s!important}
+  .bar{animation:none}
+}
+@media (max-width:480px){#toasts{right:20px;left:20px;width:auto}}
+</style>
+</head>
+<body>
+<main class="demo">
+  <h1>Toast notifications</h1>
+  <p>Click a button to trigger. Hover a toast to pause its timer.</p>
+  <div class="btns">
+    <button data-t="success">Success</button>
+    <button data-t="error">Error</button>
+    <button data-t="info">Info</button>
+    <button data-t="warn">Warning</button>
+  </div>
+</main>
+<div id="toasts" role="region" aria-label="Notifications" aria-live="polite"></div>
+
+<script>
+const MARKS={
+  success:'<path class="mark" d="M11 17.5l4.2 4.2L23 12.5"/>',
+  error:'<path class="mark" d="M12.5 12.5l9 9M21.5 12.5l-9 9"/>',
+  info:'<path class="mark" d="M17 16v6.5M17 11.8v.4"/>',
+  warn:'<path class="mark" d="M17 11.5v6.5M17 22v.4"/>'
+};
+const PRESETS={
+  success:['Profile saved','Your personal information has been updated.'],
+  error:['Couldn\u2019t save profile','Check your connection and try again.'],
+  info:['New update available','Refresh the page to get the latest version.'],
+  warn:['Storage almost full','You\u2019ve used 90% of your space.']
+};
+function showToast(type='success',title,message,duration=4000){
+  const [t0,m0]=PRESETS[type]||[];
+  const el=document.createElement('div');
+  el.className='toast '+type; el.setAttribute('role','status');
+  el.style.setProperty('--d',duration+'ms');
+  el.innerHTML=
+   '<div class="icon"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="16"/>'+MARKS[type]+'</svg></div>'+
+   '<div class="body"><div class="title"></div><div class="msg"></div></div>'+
+   '<button class="close" aria-label="Dismiss"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>'+
+   '<div class="bar"></div>';
+  el.querySelector('.title').textContent=title||t0;
+  el.querySelector('.msg').textContent=message||m0;
+  document.getElementById('toasts').appendChild(el);
+  let closed=false;
+  const close=()=>{if(closed)return;closed=true;el.classList.add('out');el.addEventListener('animationend',()=>el.remove(),{once:true})};
+  el.querySelector('.close').onclick=close;
+  el.querySelector('.bar').addEventListener('animationend',close);
+}
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>showToast(b.dataset.t));
+setTimeout(()=>showToast('success'),500);
+</script>
+</body>
+</html>

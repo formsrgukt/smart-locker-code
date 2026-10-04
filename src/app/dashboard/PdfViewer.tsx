@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
-import { ChevronLeft, ChevronRight, Plus, Minus, LayoutList, File as FileIcon, Eye, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, LayoutList, File as FileIcon, Eye, Lock, Presentation } from 'lucide-react';
 import SecureLoader from '@/components/SecureLoader';
 import PdfOpeningLoader from './PdfOpeningLoader';
 
@@ -11,13 +11,49 @@ if (typeof window !== 'undefined') {
 }
 
 export default function PdfViewer({ file, onClose }: { file: any, onClose: () => void }) {
-  // Use raw github url first to bypass regional CDN blocking of jsdelivr
-  const url = file.urls?.raw || file.url;
+  const url = file.urls?.jsdelivr || file.urls?.raw || file.download_url || file.url;
   const [error, setError] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pdfScale, setPdfScale] = useState<number>(1.0);
-  const [viewMode, setViewMode] = useState<'single' | 'continuous'>('continuous');
+  const [viewMode, setViewMode] = useState<'single' | 'continuous' | 'presentation'>('continuous');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (viewMode === 'presentation') {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+          setPageNumber(prev => Math.min(numPages || 1, prev + 1));
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          setPageNumber(prev => Math.max(1, prev - 1));
+        } else if (e.key === 'Escape') {
+          setViewMode('single');
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewMode, numPages]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && viewMode === 'presentation') {
+        setViewMode('single');
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [viewMode]);
+
+  const enterPresentationMode = () => {
+    setViewMode('presentation');
+    if (containerRef.current?.requestFullscreen) {
+      containerRef.current.requestFullscreen().catch(() => {});
+    }
+  };
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -25,8 +61,9 @@ export default function PdfViewer({ file, onClose }: { file: any, onClose: () =>
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center bg-slate-200/50 relative overflow-hidden">
+    <div ref={containerRef} className={`w-full h-full flex flex-col items-center relative overflow-hidden ${viewMode === 'presentation' ? 'bg-slate-900 justify-center' : 'bg-slate-200/50'}`}>
       {/* Combined Header & Toolkit */}
+      {viewMode !== 'presentation' && (
       <div className="w-full bg-white border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-4 z-20 shrink-0 shadow-sm">
         
         {/* Left: Title */}
@@ -38,6 +75,7 @@ export default function PdfViewer({ file, onClose }: { file: any, onClose: () =>
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
             <button onClick={() => setViewMode('single')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'single' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-500 hover:text-slate-800'}`} title="Single Page"><FileIcon size={16}/></button>
             <button onClick={() => setViewMode('continuous')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'continuous' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-500 hover:text-slate-800'}`} title="Continuous Scroll"><LayoutList size={16}/></button>
+            <button onClick={enterPresentationMode} className={`p-1.5 rounded-md transition-colors ${viewMode === 'presentation' ? 'bg-white text-blue-600 shadow-sm font-semibold' : 'text-slate-500 hover:text-slate-800'}`} title="Presentation View"><Presentation size={16}/></button>
           </div>
 
           <div className="hidden sm:block w-px h-5 bg-slate-300"></div>
@@ -62,9 +100,9 @@ export default function PdfViewer({ file, onClose }: { file: any, onClose: () =>
           <button onClick={onClose} className="px-4 py-2 bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl hover:bg-slate-200 transition-colors active:scale-95">Close</button>
         </div>
       </div>
+      )}
 
-      {/* Document Canvas */}
-      <div className="w-full h-full overflow-auto flex flex-col items-center pt-8 pb-32 px-4 scroll-smooth">
+      <div className={`w-full h-full flex flex-col items-center scroll-smooth ${viewMode === 'presentation' ? 'justify-center overflow-hidden' : 'pt-8 pb-32 px-4 overflow-auto'}`}>
         {error ? (
           <div className="mt-20 flex flex-col items-center max-w-md text-center p-8 bg-red-50 rounded-3xl">
             <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-4">
@@ -97,11 +135,11 @@ export default function PdfViewer({ file, onClose }: { file: any, onClose: () =>
           ) : (
             <Page 
               pageNumber={pageNumber} 
-              scale={pdfScale} 
+              scale={viewMode === 'presentation' ? 2.5 : pdfScale} 
               loading={<PdfOpeningLoader />}
               renderTextLayer={false} 
               renderAnnotationLayer={false}
-              className="bg-white shadow-2xl max-w-full"
+              className={`bg-white shadow-2xl ${viewMode === 'presentation' ? '!w-screen !h-screen flex items-center justify-center [&_canvas]:!max-w-[100vw] [&_canvas]:!max-h-[100vh] [&_canvas]:!object-contain [&_canvas]:!w-auto [&_canvas]:!h-auto' : 'max-w-full'}`}
             />
           )}
         </Document>

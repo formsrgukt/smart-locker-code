@@ -7,7 +7,7 @@ import {
   Settings, Shield, Search, Bell, Plus, Upload, Scan, FileBadge, 
   GraduationCap, Briefcase, File, MoreVertical, Star, Download,
   CheckCircle2, Sparkles, Activity, ShieldCheck, ChevronRight, ChevronLeft,
-  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle, LayoutGrid, FolderOpen, Library
+  Share2, Copy, Eye, Minus, LayoutList, ChevronDown, Check, Circle, LayoutGrid, FolderOpen, Library, X, Cloud
 } from 'lucide-react';
 
 import dynamic from 'next/dynamic';
@@ -103,8 +103,12 @@ export default function Dashboard() {
   const [deleteConfirmCollection, setDeleteConfirmCollection] = useState<any | null>(null);
   const [deleteCollectionInput, setDeleteCollectionInput] = useState('');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [collectionSearchQuery, setCollectionSearchQuery] = useState('');
+  const [favoritesSearchQuery, setFavoritesSearchQuery] = useState('');
+  const [trashSearchQuery, setTrashSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [isDeletingCollection, setIsDeletingCollection] = useState(false);
@@ -386,6 +390,9 @@ export default function Dashboard() {
     try {
       const trashFilesList = recentFiles.filter(f => f.status === 'trash');
       for (const file of trashFilesList) {
+        if (file.path) {
+          try { await deleteObject(ref(storage, file.path)); } catch (err) { console.error(err); }
+        }
         fetch('/api/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -394,8 +401,14 @@ export default function Dashboard() {
         await deleteDoc(doc(db, "files", file.id));
       }
       
+      const trashCollectionsList = collections.filter(c => c.status === 'trash');
+      for (const col of trashCollectionsList) {
+        await deleteDoc(doc(db, "collections", col.id));
+      }
+      
       setRecentFiles(prev => prev.filter(f => f.status !== 'trash'));
-      showToast("Trash Emptied", "All files have been permanently deleted.");
+      setCollections(prev => prev.filter(c => c.status !== 'trash'));
+      showToast("Trash Emptied", "All files and categories have been permanently deleted.");
       setIsConfirmEmptyTrashOpen(false);
     } catch (error) {
       console.error('Empty trash error:', error);
@@ -468,7 +481,7 @@ export default function Dashboard() {
   const confirmDeleteCollection = async () => {
     if (!deleteConfirmCollection) return;
     const col = deleteConfirmCollection;
-    if (deleteCollectionInput !== col.name) return;
+    if (deleteCollectionInput !== col.name.toUpperCase()) return;
     
     setIsDeletingCollection(true);
     try {
@@ -571,17 +584,19 @@ export default function Dashboard() {
       formData.append('file', file);
 
       const data: any = await new Promise((resolve, reject) => {
+        // Simulate realistic progress since client-to-server is instant but server-to-GitHub takes time
+        const interval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 95) return prev;
+            return Math.min(Math.round(prev + (Math.random() * 8 + 2)), 95);
+          });
+        }, 400);
+
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/api/upload', true);
         
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100);
-            setUploadProgress(percentComplete);
-          }
-        };
-
         xhr.onload = () => {
+          clearInterval(interval);
           setUploadProgress(100);
           try {
             const responseData = JSON.parse(xhr.responseText);
@@ -596,6 +611,7 @@ export default function Dashboard() {
         };
 
         xhr.onerror = () => {
+          clearInterval(interval);
           reject(new Error('Network error during upload'));
         };
         xhr.send(formData);
@@ -672,8 +688,8 @@ export default function Dashboard() {
     ? { value: totalStorageGB, unit: 'GB' } 
     : { value: totalStorageMB, unit: 'MB' };
 
-  // Assuming 10 GB total for progress bar (mock storage limit)
-  const storagePercent = Math.min(100, (totalSizeBytes / (10 * 1024 * 1024 * 1024)) * 100).toFixed(1);
+  // Assuming 5 GB total for progress bar (mock storage limit)
+  const storagePercent = Math.min(100, (totalSizeBytes / (5 * 1024 * 1024 * 1024)) * 100).toFixed(1);
   
   const collectionsCount = activeCollections.length;
 
@@ -700,33 +716,14 @@ export default function Dashboard() {
     activeFiles.forEach(file => {
       if (file.categoryId && Object.keys(counts).includes(file.categoryId)) {
         counts[file.categoryId as keyof typeof counts]++;
-        return;
       }
-      const name = file.name?.toLowerCase() || '';
-      if (name.match(/id|passport|aadhaar|pan|license|driving|card/)) counts.Identity++;
-      else if (name.match(/certificate|degree|mark|transcript|school|university|college|diploma/)) counts.Education++;
-      else if (name.match(/resume|cv|offer|contract|salary|payslip|relieving|experience/)) counts.Career++;
-      else if (name.match(/project|code|report|presentation/)) counts.Projects++;
-      else if (name.match(/photo|family|letter|ticket|receipt|bill/)) counts.Personal++;
-      else counts.Other++;
     });
     return counts;
   };
   const categoryCounts = getCategoryCounts();
 
   const getCategoryFiles = (files: any[], catName: string) => {
-    return files.filter(f => {
-      if (f.categoryId === catName) return true;
-      if (f.categoryId && f.categoryId !== catName) return false;
-      const name = f.name?.toLowerCase() || '';
-      if (catName === 'Identity') return name.match(/id|passport|aadhaar|pan|license|driving|card/);
-      if (catName === 'Education') return name.match(/certificate|degree|mark|transcript|school|university|college|diploma/);
-      if (catName === 'Career') return name.match(/resume|cv|offer|contract|salary|payslip|relieving|experience/);
-      if (catName === 'Projects') return name.match(/project|code|report|presentation/);
-      if (catName === 'Personal') return name.match(/photo|family|letter|ticket|receipt|bill/);
-      if (catName === 'Other') return !name.match(/id|passport|aadhaar|pan|license|driving|card|certificate|degree|mark|transcript|school|university|college|diploma|resume|cv|offer|contract|salary|payslip|relieving|experience|project|code|report|presentation|photo|family|letter|ticket|receipt|bill/);
-      return true;
-    });
+    return files.filter(f => f.categoryId === catName);
   };
 
   return (
@@ -834,7 +831,7 @@ export default function Dashboard() {
                 <div className="relative z-10">
                   <div className="flex justify-between text-xs text-slate-500 font-medium mb-2">
                     <span>Storage</span>
-                    <span>{storageDisplay.value} {storageDisplay.unit} of 10 GB used</span>
+                    <span>{storageDisplay.value} {storageDisplay.unit} of 5 GB used</span>
                   </div>
                   <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-600 rounded-full relative overflow-hidden" style={{ width: `${storagePercent}%` }}>
@@ -1204,19 +1201,34 @@ export default function Dashboard() {
           <PersonalInfoView user={user} setGlobalProfileData={setProfileData} />
         ) : activeTab === 'Collections' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
-            <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                <div className="flex items-center gap-4">
                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
                    <Library size={20} />
                  </div>
                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Collections</h2>
                </div>
-               <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-                 <Plus size={18} /> New Collection
-               </button>
+               
+               <div className="flex items-center gap-3 w-full sm:w-auto">
+                 <div className="relative flex-1 sm:w-64">
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                   <input 
+                     type="text" 
+                     placeholder="Search collections..." 
+                     value={collectionSearchQuery}
+                     onChange={(e) => setCollectionSearchQuery(e.target.value)}
+                     className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-sm"
+                   />
+                 </div>
+                 <button onClick={() => setIsCreateCollectionOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 shrink-0">
+                   <Plus size={18} /><span className="hidden sm:inline">New Collection</span>
+                 </button>
+               </div>
             </div>
             
-            {activeCollections.length === 0 ? (
+            {(() => {
+              const filteredCollections = activeCollections.filter(col => col.name.toLowerCase().includes(collectionSearchQuery.toLowerCase()));
+              return activeCollections.length === 0 ? (
                <div className="mt-4 bg-transparent py-4 flex flex-col items-center text-center">
                   <div className="overflow-visible w-full flex justify-center mt-4 py-8 px-4">
                     <div className="col-app" style={{ transform: "scale(min(1, calc((100vw - 64px) / 920)))", transformOrigin: "top center" } as any}>
@@ -1282,9 +1294,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                </div>
+            ) : filteredCollections.length === 0 ? (
+               <div className="py-12"><NoDocumentsFound /></div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {activeCollections.map((col, i) => {
+                {filteredCollections.map((col, i) => {
                   const itemCount = activeFiles.filter((f: any) => f.collectionId === col.id).length;
                   return (
                     <div key={i} onClick={() => setActiveTab('Collection:' + col.id)} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center">
@@ -1297,7 +1311,8 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-            )}
+            );
+          })()}
           </div>
         ) : activeTab.startsWith('Collection:') ? (
           <div 
@@ -1427,7 +1442,7 @@ export default function Dashboard() {
           </div>
         ) : activeTab === 'Favorites' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
-            <div className="flex items-center justify-between mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 shrink-0">
                   <Heart size={20} className="fill-red-500" />
@@ -1437,8 +1452,24 @@ export default function Dashboard() {
                   <p className="text-slate-500 text-sm">Your most important files and documents.</p>
                 </div>
               </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text" 
+                    placeholder="Search favorites..." 
+                    value={favoritesSearchQuery}
+                    onChange={(e) => setFavoritesSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-sm"
+                  />
+                </div>
+              </div>
             </div>
-            {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).length === 0 ? (
+            
+            {(() => {
+              const favoriteFiles = activeFiles.filter((f: any) => f.isFavorite);
+              const filteredFavorites = favoriteFiles.filter(f => f.name.toLowerCase().includes(favoritesSearchQuery.toLowerCase()));
+              return favoriteFiles.length === 0 ? (
               <div className="mt-8 bg-transparent py-16 flex flex-col items-center text-center">
                 <div className="fav-empty-stage" aria-hidden="true">
                   <div className="fav-ring"></div>
@@ -1482,10 +1513,12 @@ export default function Dashboard() {
                 <h3 className="text-xl font-bold text-slate-800 mb-2 mt-4">No favorites yet</h3>
                 <p className="text-slate-500 font-medium max-w-md">Click the heart icon on any file to add it to your favorites and access it quickly here.</p>
               </div>
+            ) : filteredFavorites.length === 0 ? (
+               <div className="py-12"><NoDocumentsFound /></div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {getFilteredAndSortedFiles(activeFiles.filter((f: any) => f.isFavorite)).map((file: any, i: number) => (
-                  <div key={i} onClick={() => setViewFile(file)} className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group flex flex-col">
+                {getFilteredAndSortedFiles(filteredFavorites).map((file: any, i: number) => (
+                  <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all group flex flex-col">
                     <div className="flex items-start justify-between mb-3">
                       <div className={`p-3 rounded-xl ${
                         file.type?.includes('pdf') ? 'bg-red-50 text-red-600' :
@@ -1514,7 +1547,8 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            )}
+            );
+            })()}
           </div>
         ) : activeTab === 'Security' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
@@ -1617,8 +1651,8 @@ export default function Dashboard() {
 
               {/* Email Notifications */}
               <div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
-                <div className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                  <div className="flex items-start gap-4">
+                <div onClick={toggleEmailNotifications} className="p-5 sm:p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors">
+                  <div className="flex items-start gap-4 pointer-events-none">
                     <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-1">
                       <Bell size={20} />
                     </div>
@@ -1628,8 +1662,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <button 
-                    onClick={toggleEmailNotifications}
+                    type="button"
                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${emailNotificationsEnabled ? 'bg-blue-600' : 'bg-slate-200'}`}
+                    onClick={(e) => { e.stopPropagation(); toggleEmailNotifications(); }}
                   >
                     <span className="sr-only">Toggle Notifications</span>
                     <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${emailNotificationsEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -1649,13 +1684,13 @@ export default function Dashboard() {
                       <p className="text-sm text-slate-600 max-w-lg">View your current storage usage across all your files and collections.</p>
                     </div>
                   </div>
-                  <button onClick={() => showToast('Info', 'Upgrade options coming soon', 'success')} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors whitespace-nowrap">
+                  <button onClick={() => setIsUpgradeModalOpen(true)} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors whitespace-nowrap">
                     Upgrade Plan
                   </button>
                 </div>
                 <div className="p-6 bg-white flex flex-col gap-3">
                   <div className="flex justify-between items-center text-sm mb-1">
-                    <span className="font-semibold text-slate-700">{storageDisplay.value} {storageDisplay.unit} <span className="font-normal text-slate-500">used of 10 GB</span></span>
+                    <span className="font-semibold text-slate-700">{storageDisplay.value} {storageDisplay.unit} <span className="font-normal text-slate-500">used of 5 GB</span></span>
                     <span className="text-slate-500">{storagePercent}%</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
@@ -1762,20 +1797,37 @@ export default function Dashboard() {
           </div>
         ) : activeTab === 'Trash' ? (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
-            <div className="flex justify-between items-center mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-white p-4 sm:px-6 sm:py-5 rounded-2xl border border-slate-100 shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 shrink-0">
                     <Trash2 size={20} />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Trash</h2>
                 </div>
-                <button onClick={() => setIsConfirmEmptyTrashOpen(true)} disabled={isEmptyingTrash || trashFiles.length === 0} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
-                  {isEmptyingTrash ? <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <Trash2 size={18} />} 
-                  {isEmptyingTrash ? 'Emptying...' : 'Clear Trash'}
-                </button>
+                
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Search trash..." 
+                      value={trashSearchQuery}
+                      onChange={(e) => setTrashSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-sm"
+                    />
+                  </div>
+                  <button onClick={() => setIsConfirmEmptyTrashOpen(true)} disabled={isEmptyingTrash || (trashFiles.length === 0 && trashCollections.length === 0)} className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
+                    {isEmptyingTrash ? <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <Trash2 size={18} />} 
+                    {isEmptyingTrash ? 'Emptying...' : 'Clear Trash'}
+                  </button>
+                </div>
             </div>
             
-            {(trashFiles.length === 0 && trashCollections.length === 0) ? (
+            {(() => {
+              const filteredTrashFiles = trashFiles.filter(f => f.name.toLowerCase().includes(trashSearchQuery.toLowerCase()));
+              const filteredTrashCollections = trashCollections.filter(c => c.name.toLowerCase().includes(trashSearchQuery.toLowerCase()));
+              
+              return (trashFiles.length === 0 && trashCollections.length === 0) ? (
                 <div className="mt-8 bg-transparent py-16 flex flex-col items-center text-center">
                   <div className="trash-empty-stage" aria-hidden="true">
                     <div className="trash-ring"></div>
@@ -1818,10 +1870,12 @@ export default function Dashboard() {
                   <h3 className="text-xl font-bold text-slate-800 mb-2 mt-4">Trash is empty</h3>
                   <p className="text-slate-500 font-medium max-w-md">No files or categories have been deleted.</p>
                 </div>
+            ) : filteredTrashFiles.length === 0 && filteredTrashCollections.length === 0 ? (
+                <div className="py-12"><NoDocumentsFound /></div>
             ) : (
               <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-slate-100">
-                  {trashCollections.map((col, i) => (
+                  {filteredTrashCollections.map((col, i) => (
                     <div key={'col-'+i} className="flex items-center justify-between p-4 bg-slate-50 opacity-75">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-red-500 bg-red-100">
@@ -1834,7 +1888,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                   ))}
-                  {trashFiles.map((file, i) => (
+                  {filteredTrashFiles.map((file, i) => (
                     <div key={i} className="flex items-center justify-between p-4 bg-slate-50 opacity-75">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-red-500 bg-red-100">
@@ -1853,7 +1907,8 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-            )}
+            );
+            })()}
           </div>
         ) : (
           <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-300 min-h-[60vh]">
@@ -2002,11 +2057,11 @@ export default function Dashboard() {
                     Are you sure you want to permanently delete <strong className="text-slate-700">{deleteConfirmCollection.name}</strong> and all of its files? This action cannot be undone.
                   </p>
                   <div className="text-left bg-red-50 p-4 rounded-xl border border-red-100 mb-2">
-                    <label className="block text-xs font-bold text-red-800 mb-2 uppercase tracking-wider">Type "{deleteConfirmCollection.name}" to confirm</label>
+                    <label className="block text-xs font-bold text-red-800 mb-2 uppercase tracking-wider">Type "{deleteConfirmCollection.name.toUpperCase()}" to confirm</label>
                     <input 
                       type="text" 
                       value={deleteCollectionInput}
-                      onChange={(e) => setDeleteCollectionInput(e.target.value)}
+                      onChange={(e) => setDeleteCollectionInput(e.target.value.toUpperCase())}
                       className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all outline-none text-sm"
                     />
                   </div>
@@ -2016,7 +2071,7 @@ export default function Dashboard() {
                   <div className="w-[1px] bg-slate-100"></div>
                   <button 
                     onClick={confirmDeleteCollection} 
-                    disabled={deleteCollectionInput !== deleteConfirmCollection.name}
+                    disabled={deleteCollectionInput !== deleteConfirmCollection.name.toUpperCase()}
                     className="flex-1 py-4 font-bold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                   >
                     Delete Everything
@@ -2101,6 +2156,101 @@ export default function Dashboard() {
           <MobileNavItem icon={<User size={24}/>} label="Profile" active={activeTab === 'Personal Info'} onClick={() => setActiveTab('Personal Info')} />
         </div>
       </nav>
+      {/* UPGRADE PLAN MODAL */}
+      {isUpgradeModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-white">
+              <div>
+                <h3 className="font-bold text-xl text-slate-900 flex items-center gap-2"><Cloud className="text-blue-500" size={22} /> Premium Storage</h3>
+                <p className="text-slate-500 text-sm mt-1 relative z-10">Never run out of space for your important documents.</p>
+              </div>
+              <button onClick={() => setIsUpgradeModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 sm:p-8 bg-slate-50/50">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Starter Plan */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col">
+                  <div className="mb-4">
+                    <h4 className="font-bold text-xl text-slate-900">Starter</h4>
+                    <p className="text-sm text-slate-500">For personal use</p>
+                  </div>
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="text-3xl font-extrabold text-slate-900">₹199</span>
+                    <span className="text-slate-500 font-medium">/ 1 month</span>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    <li className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                      <span><strong>+5 GB</strong> Extra Storage</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                      <span>Standard Support</span>
+                    </li>
+                  </ul>
+                  <button onClick={() => showToast('Redirecting', 'Proceeding to payment gateway...', 'success')} className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors">Select Plan</button>
+                </div>
+
+                {/* Pro Plan */}
+                <div className="bg-white rounded-2xl p-6 border-2 border-blue-500 shadow-md flex flex-col relative">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                    Most Popular
+                  </div>
+                  <div className="mb-4">
+                    <h4 className="font-bold text-xl text-blue-700">Pro</h4>
+                    <p className="text-sm text-slate-500">For heavy users</p>
+                  </div>
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="text-3xl font-extrabold text-slate-900">₹399</span>
+                    <span className="text-slate-500 font-medium">/ 2 months</span>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    <li className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                      <span><strong>+10 GB</strong> Extra Storage</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                      <span>Priority Support</span>
+                    </li>
+                  </ul>
+                  <button onClick={() => showToast('Redirecting', 'Proceeding to payment gateway...', 'success')} className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-sm transition-all">Select Plan</button>
+                </div>
+
+                {/* Ultra Plan */}
+                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col">
+                  <div className="mb-4">
+                    <h4 className="font-bold text-xl text-slate-900">Ultra</h4>
+                    <p className="text-sm text-slate-500">For professionals</p>
+                  </div>
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="text-3xl font-extrabold text-slate-900">₹499</span>
+                    <span className="text-slate-500 font-medium">/ 3 months</span>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    <li className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                      <span><strong>+15 GB</strong> Extra Storage</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                      <span>24/7 Phone Support</span>
+                    </li>
+                  </ul>
+                  <button onClick={() => showToast('Redirecting', 'Proceeding to payment gateway...', 'success')} className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors">Select Plan</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* UPLOAD MODAL */}
       {isUploadModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => !isUploading && setIsUploadModalOpen(false)}>
@@ -2108,7 +2258,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
               <h3 className="font-bold text-xl text-slate-900">Upload File</h3>
               <button onClick={() => !isUploading && setIsUploadModalOpen(false)} disabled={isUploading} className="p-1.5 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50">
-                <Minus size={20} />
+                <X size={20} />
               </button>
             </div>
             

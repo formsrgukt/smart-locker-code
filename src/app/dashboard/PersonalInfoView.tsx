@@ -45,7 +45,7 @@ const FieldInfo = ({ label, field, icon: Icon, isEditing, value, onChange, isDat
     ) : (
       <div className="flex items-center gap-2.5 text-slate-900 font-medium text-[15px]">
         {Icon && <Icon size={16} className="text-slate-400" />}
-        {value || <span className="text-slate-400 font-normal italic">Not set</span>}
+        {value || <span className="text-slate-400 font-normal italic">--</span>}
       </div>
     )}
   </div>
@@ -71,7 +71,7 @@ const MaskedId = ({ label, field, verified, isEditing, value, onChange }: { labe
               placeholder="Enter ID number"
             />
           ) : (
-            <p className="text-xs font-mono text-slate-500">{displayVal || <span className="text-slate-300 italic font-sans">Not set</span>}</p>
+            <p className="text-xs font-mono text-slate-500">{displayVal || <span className="text-slate-300 italic font-sans">--</span>}</p>
           )}
         </div>
       </div>
@@ -295,7 +295,7 @@ export default function PersonalInfoView({ user, setGlobalProfileData }: Persona
 
         <div className="pt-20 px-8 pb-8">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-2xl font-bold text-slate-900">{user?.displayName || "Student Name"}</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{profileData.preferredName || "--"}</h2>
             {user?.emailVerified && <CheckCircle2 size={20} className="text-blue-500" />}
           </div>
           <p className="text-slate-500 flex items-center gap-2 text-sm mb-8">

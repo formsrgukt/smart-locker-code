@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Animated Greeting</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--bg:#f4f6fa;--card:#fff;--text:#0f1729;--muted:#5d6b82;--line:#e3e8f0;--a:#6c8cff;--b:#7be0c3;--c:#ffc58a;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);font-family:'Lexend',system-ui,sans-serif;display:grid;place-items:center;padding:24px}
+
+.hero{position:relative;overflow:hidden;width:min(960px,100%);background:var(--card);border-radius:28px;padding:44px 40px;box-shadow:0 0 0 1px var(--line),0 20px 50px -24px rgba(15,23,41,.25);animation:card .8s cubic-bezier(.2,.9,.3,1) both}
+@keyframes card{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}
+.content{position:relative;padding-right:110px}
+h1{margin:0;font-size:clamp(1.9rem,5vw,2.8rem);font-weight:700;line-height:1.15;color:var(--text);letter-spacing:-.01em}
+.w{display:inline-block;white-space:pre}
+.ch{display:inline-block;opacity:0;transform:translateY(.7em) rotate(6deg);filter:blur(6px);animation:ch .7s cubic-bezier(.2,1.1,.3,1) forwards;animation-delay:calc(.35s + var(--i)*45ms)}
+@keyframes ch{to{opacity:1;transform:none;filter:blur(0)}}
+.name{background:linear-gradient(100deg,var(--a),var(--b),var(--c),var(--a));background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear 1.6s infinite}
+.name .ch{color:transparent}
+@keyframes shine{to{background-position:-250% 0}}
+.dot{display:inline-block;width:.16em;height:.16em;border-radius:50%;background:var(--b);margin-left:.04em;transform:scale(0);animation:dot .6s cubic-bezier(.3,1.8,.5,1) 1.3s forwards}
+@keyframes dot{to{transform:scale(1)}}
+.sub{margin:12px 0 0;font-size:1.05rem;color:var(--muted);overflow:hidden;white-space:nowrap;max-width:max-content;clip-path:inset(0 100% 0 0);animation:wipe 1s steps(40,end) 1.1s forwards}
+@keyframes wipe{to{clip-path:inset(0 0 0 0)}}
+@keyframes fade{to{opacity:1}}
+
+/* profile avatar */
+.avatar{position:absolute;right:40px;top:50%;width:80px;height:80px;margin-top:-40px;opacity:0;animation:pop .7s cubic-bezier(.3,1.5,.5,1) 1s forwards}
+@keyframes pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+.in{position:absolute;inset:0;animation:bob 5s ease-in-out 1.7s infinite}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.pulse{position:absolute;inset:0;border-radius:50%;border:2px solid var(--b);opacity:0;animation:ping 3.2s ease-out infinite}
+.pulse.p2{animation-delay:1.6s;border-color:var(--a)}
+@keyframes ping{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
+.ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--a),var(--b),var(--c),var(--a));animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.face{position:absolute;inset:4px;border-radius:50%;background:var(--card);display:grid;place-items:center;overflow:hidden}
+.face img{width:100%;height:100%;object-fit:cover}
+.face{background:linear-gradient(135deg,#f3f6ff,#effcf8)}
+.face svg{width:42px;height:42px;overflow:visible}
+.ui path,.ui circle{fill:none;stroke:url(#pg);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:0;animation:draw 4.5s ease-in-out infinite}
+.ui .body{animation-delay:.25s}
+.ui .head{transform-box:fill-box;transform-origin:center;animation:draw 4.5s ease-in-out infinite,nod 3s ease-in-out infinite}
+@keyframes draw{0%{stroke-dashoffset:1}35%,75%{stroke-dashoffset:0}100%{stroke-dashoffset:1}}
+@keyframes nod{50%{transform:translateY(-.8px) rotate(-6deg)}}
+.status{position:absolute;right:1px;bottom:3px;width:18px;height:18px;border-radius:50%;background:#22c55e;border:3px solid var(--card)}
+.status::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid #22c55e;animation:ping 2s ease-out infinite}
+
+@media (max-width:560px){
+  .hero{padding:32px 24px}
+  .content{padding-right:64px}
+  .sub{white-space:normal;clip-path:none;opacity:0;animation:fade .8s 1.1s forwards}
+  .avatar{width:54px;height:54px;right:18px;top:24px;margin-top:0}
+  .face svg{width:30px;height:30px}.status{width:13px;height:13px;border-width:2px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important}
+  .hero,.ch,.dot,.sub,.avatar{opacity:1;transform:none;filter:none;clip-path:none}
+  .pulse{opacity:0}
+}
+</style>
+</head>
+<body>
+<section class="hero" aria-live="polite">
+  <div class="avatar" id="avatar" aria-hidden="true">
+    <div class="in">
+      <span class="pulse"></span><span class="pulse p2"></span>
+      <div class="ring"></div>
+      <div class="face" id="face"></div>
+      <span class="status"></span>
+    </div>
+  </div>
+  <div class="content">
+    <h1 id="title"></h1>
+    <p class="sub">Everything important, right where you need it.</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  const NAME='Vinay';
+  const PHOTO='';            // optional: put the user's photo URL here
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const el=document.getElementById('title');
+  el.setAttribute('aria-label',greet+', '+NAME+'.');
+  let i=0;
+  const word=(text,cls)=>{
+    const w=document.createElement('span');w.className='w'+(cls?' '+cls:'');w.setAttribute('aria-hidden','true');
+    [...text].forEach(c=>{const s=document.createElement('span');s.className='ch';s.style.setProperty('--i',i++);s.textContent=c;w.appendChild(s)});
+    return w;
+  };
+  el.append(word(greet+', '),word(NAME,'name'));
+  const dot=document.createElement('span');dot.className='dot';dot.setAttribute('aria-hidden','true');
+  el.append(dot);
+  const face=document.getElementById('face');
+  if(PHOTO){const im=document.createElement('img');im.src=PHOTO;im.alt='';face.appendChild(im)}
+  else{face.innerHTML='<svg class="ui" viewBox="0 0 24 24"><defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c8cff"/><stop offset="1" stop-color="#3fcfa6"/></linearGradient></defs><circle class="head" cx="12" cy="8" r="4" pathLength="1"/><path class="body" d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" pathLength="1"/></svg>'}
+})();
+</script>
+</body>
+</html>

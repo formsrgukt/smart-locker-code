@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No documents found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --out: cubic-bezier(.16, 1, .3, 1); --ink: #0f172a; --text: #64748b; --T: 6s; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; align-items: start; padding: 20px; font-family: Lexend, Inter, "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #f9fafc; }
+
+  .panel {
+    width: min(1020px, 100%); margin: 0 auto; padding: 40px 20px 52px; border-radius: 34px; background: #fff; border: 1px solid #eef1f6;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 30px -18px rgba(40,60,140,.18); display: grid; justify-items: center; text-align: center;
+  }
+
+  .stage { position: relative; width: 280px; height: 220px; }
+  .stage > * { position: absolute; }
+  .stage * { animation-timing-function: ease-in-out; }
+
+  /* ---------- document (solid, then dissolves) ---------- */
+  .doc, .ghost { left: 50%; top: 20px; width: 120px; height: 150px; margin-left: -60px; border-radius: 14px; }
+  .doc {
+    padding: 14px 14px; background: #fff; border: 1px solid #e3e9f4; box-shadow: 0 16px 30px -16px rgba(30,41,90,.35);
+    display: grid; align-content: start; gap: 9px; opacity: 0; animation: doc var(--T) infinite;
+  }
+  @keyframes doc {
+    0%       { opacity: 0; transform: translateY(14px) scale(.96); }
+    6%, 50%  { opacity: 1; transform: none; }
+    56%, 100%{ opacity: 0; transform: scale(.94); }
+  }
+  .doc .tag { width: 34px; height: 12px; border-radius: 4px; background: #dbe7ff; }
+  .doc .ln { display: block; height: 5px; border-radius: 3px; background: #e6ebf5; }
+  .doc .ln:nth-child(3) { width: 80%; } .doc .ln:nth-child(4) { width: 92%; } .doc .ln:nth-child(5) { width: 60%; } .doc .ln:nth-child(6) { width: 76%; }
+
+  /* the "empty" placeholder that remains */
+  .ghost { border: 2px dashed #cfd8e6; background: #f8fafc; display: grid; place-items: center; opacity: 1; animation: ghost var(--T) infinite; }
+  .ghost svg { width: 34px; height: 34px; fill: none; stroke: #cbd5e1; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  @keyframes ghost {
+    0%, 50%  { opacity: 0; transform: scale(.96); }
+    58%, 90% { opacity: 1; transform: none; }
+    96%, 100%{ opacity: 0; transform: none; }
+  }
+
+  /* ---------- magnifier ---------- */
+  .mag { left: 50%; top: 95px; width: 0; height: 0; z-index: 4; opacity: 0; animation: mag var(--T) infinite; }
+  .mag svg { position: absolute; left: -30px; top: -30px; width: 72px; height: 72px; overflow: visible; filter: drop-shadow(0 8px 10px rgba(30,41,90,.25)); }
+  @keyframes mag {
+    0%, 6%  { opacity: 0; translate: 110px 70px; }
+    12%     { opacity: 1; translate: 90px 55px; }
+    24%     { translate: -30px -45px; }
+    34%     { translate: 30px -15px; }
+    44%     { translate: -30px 20px; }
+    52%     { translate: 0 5px; }
+    55%     { translate: -10px 5px; }
+    57%     { translate: 10px 5px; }
+    59%     { translate: -8px 5px; }
+    61%     { translate: 8px 5px; }
+    63%     { translate: -4px 5px; }
+    65%, 86%{ opacity: 1; translate: 0 5px; }
+    92%, 100% { opacity: 0; translate: 0 5px; }
+  }
+  .lens-fill { fill: rgba(21,93,252,.07); }
+  .lens { fill: none; stroke: #94a3b8; stroke-width: 4; }
+  .handle { stroke: #94a3b8; stroke-width: 6; stroke-linecap: round; }
+  .xm { fill: none; stroke: #ef4444; stroke-width: 3.5; stroke-linecap: round; opacity: 0; transform-box: fill-box; transform-origin: center; animation: xm var(--T) infinite; }
+  @keyframes xm {
+    0%, 51%  { opacity: 0; scale: .4; }
+    54%      { opacity: 1; scale: 1.25; }
+    56%      { opacity: 1; scale: 1; }
+    86%      { opacity: 1; scale: 1; }
+    90%, 100%{ opacity: 0; scale: 1; }
+  }
+
+  .ring { left: 50%; top: 70px; width: 60px; height: 60px; margin-left: -30px; border-radius: 50%; border: 2px solid #fca5a5; opacity: 0; animation: ring var(--T) ease-out infinite; }
+  @keyframes ring { 0%, 52% { opacity: 0; scale: .5; } 53% { opacity: .6; scale: .6; } 62%, 100% { opacity: 0; scale: 1.8; } }
+
+  /* ---------- text ---------- */
+  h2 { margin: 2px 0 8px; font-size: 22px; font-weight: 700; letter-spacing: -.005em; animation: textIn .9s var(--out) both; }
+  .panel p { margin: 0; max-width: 420px; font-size: 17px; font-weight: 500; line-height: 1.5; color: var(--text); animation: textIn .9s var(--out) .12s both; }
+  @keyframes textIn { from { opacity: 0; transform: translateY(12px); } }
+
+  @media (max-width: 520px) { h2 { font-size: 20px; } .panel p { font-size: 15px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .doc, .mag, .ring { display: none; } }
+</style>
+</head>
+<body>
+
+<section class="panel">
+  <div class="stage" aria-hidden="true">
+
+    <!-- empty placeholder (appears after the search) -->
+    <div class="ghost">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+    </div>
+
+    <!-- document being searched -->
+    <div class="doc">
+      <b class="tag"></b>
+      <i class="ln"></i><i class="ln"></i><i class="ln"></i><i class="ln"></i><i class="ln"></i>
+    </div>
+
+    <div class="ring"></div>
+
+    <!-- magnifier -->
+    <div class="mag">
+      <svg viewBox="0 0 72 72">
+        <circle class="lens-fill" cx="30" cy="30" r="20"/>
+        <line class="handle" x1="45" y1="45" x2="62" y2="62"/>
+        <circle class="lens" cx="30" cy="30" r="20"/>
+        <g class="xm"><path d="M23 23l14 14M37 23L23 37"/></g>
+      </svg>
+    </div>
+  </div>
+
+  <h2>No documents found</h2>
+  <p>We couldn't find any documents matching your search.</p>
+</section>
+
+</body>
+</html>
